@@ -1,4 +1,4 @@
-import { useState, memo } from 'react';
+import { useState, memo, Fragment } from 'react';
 import AdvocatesTable from './AdvocatesTable';
 
 const FirmsTable = memo(({ firms, onActivate, onDeactivate, loadingUsers }) => {
@@ -49,9 +49,8 @@ const FirmsTable = memo(({ firms, onActivate, onDeactivate, loadingUsers }) => {
               const advocateCount = firm.advocateCount || firm.advocates?.length || 0;
 
               return (
-                <>
+                <Fragment key={firmId}>
                   <tr
-                    key={firmId}
                     className={`hover:bg-gray-50 cursor-pointer transition-colors ${
                       isExpanded ? 'bg-purple-50' : ''
                     }`}
@@ -130,7 +129,7 @@ const FirmsTable = memo(({ firms, onActivate, onDeactivate, loadingUsers }) => {
                       </td>
                     </tr>
                   )}
-                </>
+                </Fragment>
               );
             })}
           </tbody>
