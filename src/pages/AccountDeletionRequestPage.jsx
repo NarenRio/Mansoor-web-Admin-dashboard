@@ -57,6 +57,9 @@ function AccountDeletionRequestPage() {
             <p className="mt-2 text-purple-100">
               Submit your request to delete account data. No login is required.
             </p>
+            <p className="mt-2 text-purple-100 text-sm">
+              Provided by RIO Bizsols Private Limited.
+            </p>
           </div>
 
           <div className="p-6 md:p-8">
@@ -102,6 +105,13 @@ function AccountDeletionRequestPage() {
                   review is completed and actioned by our team.
                 </p>
               </div>
+            </div>
+
+            <div className="mt-4 rounded-xl border border-blue-100 bg-blue-50 p-4">
+              <h3 className="font-semibold text-gray-900">Request processing timeline</h3>
+              <p className="mt-2 text-sm text-gray-700">
+                We aim to review and action account deletion requests within 7 business days.
+              </p>
             </div>
 
             <form onSubmit={onSubmit} className="mt-8 space-y-4">
