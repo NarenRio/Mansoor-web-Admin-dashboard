@@ -5,6 +5,7 @@ import SignupPage from './pages/SignupPage';
 import Dashboard from './pages/Dashboard';
 import CourtMaster from './pages/CourtMaster';
 import CourtTypeMaster from './pages/CourtTypeMaster';
+import AccountDeletionRequestPage from './pages/AccountDeletionRequestPage';
 
 // Protected Route Component
 const ProtectedRoute = ({ children }) => {
@@ -37,6 +38,14 @@ function App() {
               <SignupPage />
             </PublicRoute>
           }
+        />
+        <Route
+          path="/account-deletion"
+          element={<AccountDeletionRequestPage />}
+        />
+        <Route
+          path="/delete-account"
+          element={<AccountDeletionRequestPage />}
         />
         <Route
           path="/"
