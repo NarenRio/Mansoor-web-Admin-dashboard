@@ -56,6 +56,39 @@ export const adminAPI = {
     }
   },
 
+  // Time spent per lawyer — today + all time (admin only)
+  getTimeSpentByUsers: async () => {
+    try {
+      const response = await api.get('/admin/time-spent');
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching time spent:', error);
+      throw error;
+    }
+  },
+
+  // States, districts, courts hierarchy for La Law filters
+  getCourtFilterOptions: async () => {
+    try {
+      const response = await api.get('/admin/court-filter-options');
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching court filter options:', error);
+      throw error;
+    }
+  },
+
+  // Get currently online lawyers (admin only)
+  getOnlineUsers: async () => {
+    try {
+      const response = await api.get('/admin/online-users');
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching online users:', error);
+      throw error;
+    }
+  },
+
   // Get all advocates
   getAllAdvocates: async (search = null) => {
     try {

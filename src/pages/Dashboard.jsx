@@ -4,6 +4,14 @@ import { adminAPI } from '../services/api';
 import { authService } from '../services/authService';
 import FirmsTable from '../components/FirmsTable';
 import AutocompleteInput from '../components/AutocompleteInput';
+import LaLawOnlineActivityPanel, {
+  enrichOnlineActivity,
+} from '../components/LaLawOnlineActivityPanel';
+import {
+  mergeCourtFilterApiResponse,
+  seedDistrictCourts,
+  seedRegionDistricts,
+} from '../data/regionCourtHierarchy';
 
 function Dashboard() {
   const [firms, setFirms] = useState([]);
@@ -15,15 +23,105 @@ function Dashboard() {
   const [loadingUsers, setLoadingUsers] = useState(new Set());
   const [firmNames, setFirmNames] = useState([]);
   const [advocateNames, setAdvocateNames] = useState([]);
+  const [onlineUsers, setOnlineUsers] = useState([]);
+  const [enrichedOnlineUsers, setEnrichedOnlineUsers] = useState([]);
+  const [onlineLoading, setOnlineLoading] = useState(true);
+  const [onlineError, setOnlineError] = useState(null);
+  const [onlineIdleMinutes, setOnlineIdleMinutes] = useState(15);
+  const [onlineTimezone, setOnlineTimezone] = useState('IST');
+  const [timeSpentUsers, setTimeSpentUsers] = useState([]);
+  const [usageSessions, setUsageSessions] = useState([]);
+  const [regionHierarchy, setRegionHierarchy] = useState(() =>
+    seedDistrictCourts(seedRegionDistricts({}))
+  );
   const searchTimeoutRef = useRef(null);
+  const onlineRefreshRef = useRef(null);
   const navigate = useNavigate();
   const admin = authService.getAdmin();
 
   // Load dropdown options once on mount
+  const loadOnlineUsers = async () => {
+    try {
+      setOnlineLoading(true);
+      setOnlineError(null);
+      const response = await adminAPI.getOnlineUsers();
+      if (response.success) {
+        setOnlineUsers(response.data || []);
+        if (response.meta?.idleMinutes) {
+          setOnlineIdleMinutes(response.meta.idleMinutes);
+        }
+        if (response.meta?.timezone) {
+          const tz = response.meta.timezone;
+          setOnlineTimezone(tz.includes('Kolkata') ? 'IST' : tz);
+        }
+      } else {
+        setOnlineError(response.message || 'Failed to load online users');
+      }
+    } catch (err) {
+      const status = err.response?.status;
+      if (status === 404) {
+        setOnlineError(
+          'Online users API not found. Use local backend (npm run dev) with latest code, or deploy the updated API to production.'
+        );
+      } else {
+        setOnlineError(
+          err.response?.data?.message || err.message || 'Failed to load online users'
+        );
+      }
+    } finally {
+      setOnlineLoading(false);
+    }
+  };
+
+  const mergeOnlineActivity = (online, sessions, timeSpent) => {
+    setEnrichedOnlineUsers(enrichOnlineActivity(online, sessions, timeSpent));
+  };
+
+  /** Loads usage sessions + per-user time labels for Active users (no separate time-spent UI). */
+  const loadUsageForActiveUsers = async () => {
+    try {
+      const response = await adminAPI.getTimeSpentByUsers();
+      if (response.success) {
+        setTimeSpentUsers(response.data || []);
+        setUsageSessions(response.sessions || []);
+      }
+    } catch (err) {
+      console.warn('Usage data for active users failed:', err.message);
+    }
+  };
+
+  useEffect(() => {
+    mergeOnlineActivity(onlineUsers, usageSessions, timeSpentUsers);
+  }, [onlineUsers, usageSessions, timeSpentUsers]);
+
+  const loadCourtFilterOptions = async () => {
+    try {
+      const response = await adminAPI.getCourtFilterOptions();
+      if (response.success && response.data) {
+        setRegionHierarchy(mergeCourtFilterApiResponse(response.data));
+      } else {
+        setRegionHierarchy(mergeCourtFilterApiResponse({}));
+      }
+    } catch (err) {
+      console.warn('Court filter options API failed; using local seed.', err);
+      setRegionHierarchy(mergeCourtFilterApiResponse({}));
+    }
+  };
+
   useEffect(() => {
     loadFirmNames();
     loadAdvocateNames();
     loadFirms();
+    loadOnlineUsers();
+    loadUsageForActiveUsers();
+    loadCourtFilterOptions();
+
+    onlineRefreshRef.current = setInterval(loadOnlineUsers, 60000);
+    return () => {
+      if (onlineRefreshRef.current) {
+        clearInterval(onlineRefreshRef.current);
+      }
+    };
   }, []);
 
   useEffect(() => {
@@ -354,6 +452,22 @@ function Dashboard() {
                   }
                   loadFirms();
                 }}
+              />
+            </div>
+
+            <div className="md:col-span-2">
+              <LaLawOnlineActivityPanel
+                users={enrichedOnlineUsers}
+                loading={onlineLoading}
+                error={onlineError}
+                onRefresh={async () => {
+                  await loadOnlineUsers();
+                  await loadUsageForActiveUsers();
+                  await loadCourtFilterOptions();
+                }}
+                idleMinutes={onlineIdleMinutes}
+                timezoneLabel={onlineTimezone}
+                regionHierarchy={regionHierarchy}
               />
             </div>
           </div>

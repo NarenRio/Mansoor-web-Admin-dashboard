@@ -15,6 +15,7 @@ function CourtMaster() {
   const [editingCourt, setEditingCourt] = useState(null);
   const [formData, setFormData] = useState({
     courtName: '',
+    courtDistrict: '',
     courtCity: '',
     courtState: ''
   });
@@ -66,6 +67,7 @@ function CourtMaster() {
       setEditingCourt(court);
       setFormData({
         courtName: court.courtName || '',
+        courtDistrict: court.courtDistrict || '',
         courtCity: court.courtCity || '',
         courtState: court.courtState || ''
       });
@@ -73,6 +75,7 @@ function CourtMaster() {
       setEditingCourt(null);
       setFormData({
         courtName: '',
+        courtDistrict: '',
         courtCity: '',
         courtState: ''
       });
@@ -85,6 +88,7 @@ function CourtMaster() {
     setEditingCourt(null);
     setFormData({
       courtName: '',
+      courtDistrict: '',
       courtCity: '',
       courtState: ''
     });
@@ -296,6 +300,9 @@ function CourtMaster() {
                       Court Name
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
+                      District
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
                       City
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
@@ -311,6 +318,9 @@ function CourtMaster() {
                     <tr key={court.id} className="hover:bg-gray-50">
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="text-sm font-medium text-gray-900">{court.courtName}</div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="text-sm text-gray-900">{court.courtDistrict || '-'}</div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="text-sm text-gray-900">{court.courtCity || '-'}</div>
@@ -388,25 +398,36 @@ function CourtMaster() {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">City</label>
-                  <input
-                    type="text"
-                    name="courtCity"
-                    value={formData.courtCity}
-                    onChange={handleInputChange}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-purple"
-                    placeholder="e.g., Coimbatore"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">State</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">State (region)</label>
                   <input
                     type="text"
                     name="courtState"
                     value={formData.courtState}
                     onChange={handleInputChange}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-purple"
-                    placeholder="e.g., Tamil Nadu"
+                    placeholder="e.g., Karnataka"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">District</label>
+                  <input
+                    type="text"
+                    name="courtDistrict"
+                    value={formData.courtDistrict}
+                    onChange={handleInputChange}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-purple"
+                    placeholder="e.g., Bengaluru or Mysuru"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">City (in district)</label>
+                  <input
+                    type="text"
+                    name="courtCity"
+                    value={formData.courtCity}
+                    onChange={handleInputChange}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-purple"
+                    placeholder="e.g., Jayanagar, Whitefield"
                   />
                 </div>
                 <div className="flex gap-3 pt-4">

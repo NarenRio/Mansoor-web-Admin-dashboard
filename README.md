@@ -11,6 +11,7 @@ A React-based admin panel for managing law firms and advocates, built with React
 - **Status Management**: Clear display of user status (Pending, Active, Inactive)
 - **Filtering**: Filter firms by name
 - **Search**: Search advocates by name, email, or phone number
+- **Online users**: See lawyers currently online (admin-only; from `tblLawyerUsageDet`)
 
 ## Prerequisites
 
@@ -47,6 +48,8 @@ The admin panel uses the following backend endpoints:
 - `GET /api/admin/advocates` - Get all advocates
 - `PATCH /api/admin/users/:id/activate` - Activate a user
 - `PATCH /api/admin/users/:id/deactivate` - Deactivate a user
+- `GET /api/admin/online-users` - List currently online lawyers
+- `GET /api/admin/time-spent?period=today|week|month|all` - Time spent per lawyer from tblLawyerUsageDet
 
 ## Build for Production
 

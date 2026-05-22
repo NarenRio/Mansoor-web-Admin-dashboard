@@ -6,6 +6,7 @@ import Dashboard from './pages/Dashboard';
 import CourtMaster from './pages/CourtMaster';
 import CourtTypeMaster from './pages/CourtTypeMaster';
 import AccountDeletionRequestPage from './pages/AccountDeletionRequestPage';
+import LaLawActivityMockupPage from './pages/LaLawActivityMockupPage';
 
 // Protected Route Component
 const ProtectedRoute = ({ children }) => {
@@ -71,6 +72,7 @@ function App() {
             </ProtectedRoute>
           }
         />
+        <Route path="/la-law-activity-mockup" element={<LaLawActivityMockupPage />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </Router>
