@@ -216,6 +216,12 @@ function CourtTypeMaster() {
             >
               Court Types
             </button>
+            <button
+              onClick={() => navigate('/case-details')}
+              className="px-4 py-2 text-purple-100 hover:text-white hover:bg-purple-600 rounded-lg transition-colors text-sm font-medium"
+            >
+              Case Details
+            </button>
           </div>
         </div>
       </header>

@@ -248,6 +248,32 @@ export const adminAPI = {
     }
   },
 
+  // Case Details - Search with combined filters
+  searchCases: async (filters = {}) => {
+    try {
+      const params = {};
+      Object.entries(filters).forEach(([key, value]) => {
+        if (value && value.trim()) params[key] = value.trim();
+      });
+      const response = await api.get('/admin/case-search', { params });
+      return response.data;
+    } catch (error) {
+      console.error('Error searching cases:', error);
+      throw error;
+    }
+  },
+
+  // Get petition types for filter dropdown
+  getPetitionTypes: async () => {
+    try {
+      const response = await api.get('/admin/petition-types');
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching petition types:', error);
+      throw error;
+    }
+  },
+
 };
 
 export const publicAPI = {

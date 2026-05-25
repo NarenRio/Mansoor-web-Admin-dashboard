@@ -5,6 +5,7 @@ import SignupPage from './pages/SignupPage';
 import Dashboard from './pages/Dashboard';
 import CourtMaster from './pages/CourtMaster';
 import CourtTypeMaster from './pages/CourtTypeMaster';
+import CaseDetails from './pages/CaseDetails';
 import AccountDeletionRequestPage from './pages/AccountDeletionRequestPage';
 import LaLawActivityMockupPage from './pages/LaLawActivityMockupPage';
 
@@ -69,6 +70,14 @@ function App() {
           element={
             <ProtectedRoute>
               <CourtTypeMaster />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/case-details"
+          element={
+            <ProtectedRoute>
+              <CaseDetails />
             </ProtectedRoute>
           }
         />

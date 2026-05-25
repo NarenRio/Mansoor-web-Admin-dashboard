@@ -116,7 +116,7 @@ function Dashboard() {
     loadUsageForActiveUsers();
     loadCourtFilterOptions();
 
-    onlineRefreshRef.current = setInterval(loadOnlineUsers, 30000);
+    onlineRefreshRef.current = setInterval(loadOnlineUsers, 60000);
     return () => {
       if (onlineRefreshRef.current) {
         clearInterval(onlineRefreshRef.current);
@@ -397,6 +397,12 @@ function Dashboard() {
               className="px-4 py-2 text-purple-100 hover:text-white hover:bg-purple-600 rounded-lg transition-colors text-sm font-medium"
             >
               Court Master
+            </button>
+            <button
+              onClick={() => navigate('/case-details')}
+              className="px-4 py-2 text-purple-100 hover:text-white hover:bg-purple-600 rounded-lg transition-colors text-sm font-medium"
+            >
+              Case Details
             </button>
           </div>
         </div>
