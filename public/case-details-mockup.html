@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Case Details - Mockup Screen</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: { purple: '#6B46C1', 'purple-dark': '#553C9A' }
+          }
+        }
+      }
+    }
+  </script>
+</head>
+<body class="bg-gray-50 min-h-screen">
+
+  <!-- Header -->
+  <header class="bg-primary-purple text-white shadow-md">
+    <div class="max-w-7xl mx-auto px-6 py-6">
+      <div class="flex items-center justify-between">
+        <div>
+          <h1 class="text-3xl font-bold">Admin Panel</h1>
+          <p class="mt-1 text-purple-200 text-sm">Case Details</p>
+        </div>
+        <div class="flex items-center gap-4">
+          <span class="text-purple-200 text-sm">hhm.advocate@gmail.com</span>
+          <button class="px-4 py-2 bg-white text-primary-purple rounded-lg text-sm font-medium">Logout</button>
+        </div>
+      </div>
+      <div class="mt-4 flex gap-3 border-t border-purple-400 pt-4">
+        <button class="px-4 py-2 text-purple-200 rounded-lg text-sm font-medium">Firms & Advocates</button>
+        <button class="px-4 py-2 text-purple-200 rounded-lg text-sm font-medium">Courts</button>
+        <button class="px-4 py-2 text-purple-200 rounded-lg text-sm font-medium">Court Types</button>
+        <button class="px-4 py-2 text-white bg-purple-600 rounded-lg text-sm font-medium">Case Details</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main -->
+  <main class="max-w-7xl mx-auto px-6 py-8">
+
+    <!-- Search Row - all horizontal -->
+    <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:24px;" id="searchRow">
+
+      <!-- Main Search Box -->
+      <div style="display:flex; align-items:center; border:1px solid #d1d5db; border-radius:8px; overflow:hidden; background:white;" id="searchBox-0">
+        <span style="padding:10px 12px; background:#f3f4f6; font-size:12px; font-weight:600; color:#4b5563; border-right:1px solid #d1d5db; white-space:nowrap;" id="label-0">Keyword</span>
+        <input type="text" id="input-0" data-type="keyword" placeholder="Search..." style="padding:10px 12px; font-size:14px; border:none; outline:none; width:180px;" oninput="filterResults()" />
+      </div>
+
+      <!-- Filter Button -->
+      <div style="position:relative; display:inline-block;">
+        <button id="filterBtn" style="display:flex; align-items:center; gap:6px; padding:10px 16px; background:#6B46C1; color:white; border:none; border-radius:8px; font-size:14px; font-weight:500; cursor:pointer;">
+          <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"/></svg>
+          Filter
+        </button>
+        <div id="filterDropdown" style="display:none; position:absolute; left:0; top:100%; margin-top:4px; z-index:999; width:200px; background:white; border:1px solid #e5e7eb; border-radius:8px; box-shadow:0 4px 12px rgba(0,0,0,0.1);">
+          <button onclick="selectFilter('lawyer')" style="display:block; width:100%; text-align:left; padding:10px 16px; font-size:14px; color:#374151; border:none; background:none; cursor:pointer;" onmouseover="this.style.background='#F3E8FF'" onmouseout="this.style.background='none'">Lawyer</button>
+          <button onclick="selectFilter('petitionType')" style="display:block; width:100%; text-align:left; padding:10px 16px; font-size:14px; color:#374151; border:none; background:none; cursor:pointer;" onmouseover="this.style.background='#F3E8FF'" onmouseout="this.style.background='none'">Petition Type</button>
+          <button onclick="selectFilter('accused')" style="display:block; width:100%; text-align:left; padding:10px 16px; font-size:14px; color:#374151; border:none; background:none; cursor:pointer;" onmouseover="this.style.background='#F3E8FF'" onmouseout="this.style.background='none'">Accused Name</button>
+          <button onclick="selectFilter('respondent')" style="display:block; width:100%; text-align:left; padding:10px 16px; font-size:14px; color:#374151; border:none; background:none; cursor:pointer;" onmouseover="this.style.background='#F3E8FF'" onmouseout="this.style.background='none'">Respondent</button>
+        </div>
+      </div>
+
+      <!-- + Add Button (hidden until filter is selected) -->
+      <div style="position:relative; display:inline-block;">
+        <button id="addBtn" style="display:none; align-items:center; justify-content:center; padding:10px; background:#6B46C1; color:white; border:none; border-radius:8px; cursor:pointer;">
+          <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+        </button>
+        <div id="addDropdown" style="display:none; position:absolute; left:0; top:100%; margin-top:4px; z-index:999; width:200px; background:white; border:1px solid #e5e7eb; border-radius:8px; box-shadow:0 4px 12px rgba(0,0,0,0.1);">
+          <button onclick="addNewFilter('keyword')" style="display:block; width:100%; text-align:left; padding:10px 16px; font-size:14px; color:#374151; border:none; background:none; cursor:pointer;" onmouseover="this.style.background='#F3E8FF'" onmouseout="this.style.background='none'">Keyword</button>
+          <button onclick="addNewFilter('lawyer')" style="display:block; width:100%; text-align:left; padding:10px 16px; font-size:14px; color:#374151; border:none; background:none; cursor:pointer;" onmouseover="this.style.background='#F3E8FF'" onmouseout="this.style.background='none'">Lawyer</button>
+          <button onclick="addNewFilter('petitionType')" style="display:block; width:100%; text-align:left; padding:10px 16px; font-size:14px; color:#374151; border:none; background:none; cursor:pointer;" onmouseover="this.style.background='#F3E8FF'" onmouseout="this.style.background='none'">Petition Type</button>
+          <button onclick="addNewFilter('accused')" style="display:block; width:100%; text-align:left; padding:10px 16px; font-size:14px; color:#374151; border:none; background:none; cursor:pointer;" onmouseover="this.style.background='#F3E8FF'" onmouseout="this.style.background='none'">Accused Name</button>
+          <button onclick="addNewFilter('respondent')" style="display:block; width:100%; text-align:left; padding:10px 16px; font-size:14px; color:#374151; border:none; background:none; cursor:pointer;" onmouseover="this.style.background='#F3E8FF'" onmouseout="this.style.background='none'">Respondent</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Results -->
+    <div class="flex items-center justify-between mb-3">
+      <h2 class="text-lg font-bold text-gray-900">Results</h2>
+      <span id="resultCount" class="text-sm text-gray-500 bg-gray-100 px-3 py-1 rounded-full">5 cases found</span>
+    </div>
+
+    <div id="tableWrap" class="bg-white rounded-lg border border-gray-200 overflow-hidden">
+      <table class="w-full">
+        <thead class="bg-primary-purple">
+          <tr>
+            <th class="px-4 py-3 text-left text-xs font-medium text-white uppercase">Case ID</th>
+            <th class="px-4 py-3 text-left text-xs font-medium text-white uppercase">Description</th>
+            <th class="px-4 py-3 text-left text-xs font-medium text-white uppercase">Lawyer</th>
+            <th class="px-4 py-3 text-left text-xs font-medium text-white uppercase">Accused</th>
+            <th class="px-4 py-3 text-left text-xs font-medium text-white uppercase">Respondent</th>
+            <th class="px-4 py-3 text-left text-xs font-medium text-white uppercase">Petition</th>
+            <th class="px-4 py-3 text-left text-xs font-medium text-white uppercase">Status</th>
+          </tr>
+        </thead>
+        <tbody id="resultsBody" class="divide-y divide-gray-100"></tbody>
+      </table>
+    </div>
+
+    <div id="noResults" class="hidden text-center py-12 bg-white rounded-lg border border-gray-200">
+      <svg class="mx-auto h-10 w-10 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+      <p class="mt-3 text-sm text-gray-500">No cases match your filters.</p>
+    </div>
+
+  </main>
+
+  <script>
+    var cases = [
+      { id: 'CASE001', desc: 'Crime No 245/2024', lawyer: 'Adv. Priya Sharma', accused: 'Ramesh Kumar', respondent: 'Koramangala PS', petition: 'Bail', status: 'Active' },
+      { id: 'CASE002', desc: 'Crime No 312/2024', lawyer: 'Adv. Mohammed Hussain', accused: 'Suresh Babu', respondent: 'Whitefield PS', petition: 'Criminal', status: 'Active' },
+      { id: 'CASE003', desc: 'Property Dispute', lawyer: 'Adv. Deepa Nair', accused: 'N/A', respondent: 'SBI Bank, Anna Nagar', petition: 'Property', status: 'Pending' },
+      { id: 'CASE004', desc: 'Domestic Violence Case', lawyer: 'Adv. Priya Sharma', accused: 'Vikram Singh', respondent: 'Jayanagar PS', petition: 'Family', status: 'Active' },
+      { id: 'CASE005', desc: 'Bail Application CR 78/2024', lawyer: 'Adv. Ravi Kumar', accused: 'Anand Rao', respondent: 'HSR Layout PS', petition: 'Bail', status: 'Pending' },
+    ];
+
+    var filterCount = 0;
+    var labels = { keyword: 'Keyword', lawyer: 'Lawyer', petitionType: 'Petition Type', accused: 'Accused', respondent: 'Respondent' };
+    var placeholders = { keyword: 'Search...', lawyer: 'Lawyer name...', petitionType: 'e.g. Bail, Criminal...', accused: 'Accused name...', respondent: 'Police station, bank...' };
+
+    // Filter button
+    document.getElementById('filterBtn').addEventListener('click', function(e) {
+      e.stopPropagation();
+      document.getElementById('addDropdown').style.display = 'none';
+      var dd = document.getElementById('filterDropdown');
+      dd.style.display = dd.style.display === 'none' ? 'block' : 'none';
+    });
+
+    // Add button
+    document.getElementById('addBtn').addEventListener('click', function(e) {
+      e.stopPropagation();
+      document.getElementById('filterDropdown').style.display = 'none';
+      var dd = document.getElementById('addDropdown');
+      dd.style.display = dd.style.display === 'none' ? 'block' : 'none';
+    });
+
+    // Select from Filter dropdown → changes main search box label
+    function selectFilter(type) {
+      var box = document.getElementById('searchBox-0');
+      var label = '<span style="padding:10px 12px; background:#f3f4f6; font-size:12px; font-weight:600; color:#4b5563; border-right:1px solid #d1d5db; white-space:nowrap;" id="label-0">' + labels[type] + '</span>';
+
+      var inputHtml = '';
+      if (type === 'petitionType') {
+        inputHtml = '<select id="input-0" data-type="petitionType" style="padding:10px 12px; font-size:14px; border:none; outline:none; width:180px; background:white;" onchange="filterResults()">' +
+          '<option value="">All</option><option value="Bail">Bail</option><option value="Criminal">Criminal</option><option value="Civil">Civil</option><option value="Property">Property</option><option value="Family">Family</option><option value="Consumer">Consumer</option><option value="Writ">Writ</option><option value="Others">Others</option></select>';
+      } else {
+        inputHtml = '<input type="text" id="input-0" data-type="' + type + '" placeholder="' + placeholders[type] + '" style="padding:10px 12px; font-size:14px; border:none; outline:none; width:180px;" oninput="filterResults()" />';
+      }
+
+      box.innerHTML = label + inputHtml;
+      document.getElementById('filterDropdown').style.display = 'none';
+      document.getElementById('addBtn').style.display = 'flex';
+      filterResults();
+    }
+
+    // Add new filter → appears horizontally next to existing ones
+    function addNewFilter(type) {
+      filterCount++;
+      var row = document.getElementById('searchRow');
+      var addBtnWrapper = document.getElementById('addBtn').parentElement;
+
+      var box = document.createElement('div');
+      box.id = 'searchBox-' + filterCount;
+      box.style.cssText = 'display:flex; align-items:center; border:1px solid #d1d5db; border-radius:8px; overflow:hidden; background:white;';
+
+      var inputHtml = '';
+      if (type === 'petitionType') {
+        inputHtml = '<select data-type="petitionType" style="padding:10px 12px; font-size:14px; border:none; outline:none; width:180px; background:white;" onchange="filterResults()">' +
+          '<option value="">All</option><option value="Bail">Bail</option><option value="Criminal">Criminal</option><option value="Civil">Civil</option><option value="Property">Property</option><option value="Family">Family</option><option value="Consumer">Consumer</option><option value="Writ">Writ</option><option value="Others">Others</option></select>';
+      } else {
+        inputHtml = '<input type="text" data-type="' + type + '" placeholder="' + placeholders[type] + '" style="padding:10px 12px; font-size:14px; border:none; outline:none; width:180px;" oninput="filterResults()" />';
+      }
+
+      box.innerHTML =
+        '<span style="padding:10px 12px; background:#f3f4f6; font-size:12px; font-weight:600; color:#4b5563; border-right:1px solid #d1d5db; white-space:nowrap;">' + labels[type] + '</span>' +
+        inputHtml +
+        '<button onclick="removeBox(\'searchBox-' + filterCount + '\')" style="padding:0 8px; color:#9ca3af; border:none; background:none; cursor:pointer; font-size:18px;" onmouseover="this.style.color=\'#ef4444\'" onmouseout="this.style.color=\'#9ca3af\'">&times;</button>';
+
+      row.insertBefore(box, addBtnWrapper);
+      document.getElementById('addDropdown').style.display = 'none';
+    }
+
+    function removeBox(id) {
+      document.getElementById(id).remove();
+      filterResults();
+    }
+
+    function filterResults() {
+      var allBoxes = document.querySelectorAll('[id^="searchBox-"]');
+      var filters = [];
+
+      allBoxes.forEach(function(box) {
+        var input = box.querySelector('input') || box.querySelector('select');
+        if (!input) return;
+        var type = input.dataset.type || 'keyword';
+        var value = input.value.toLowerCase().trim();
+        if (value) filters.push({ type: type, value: value });
+      });
+
+      var filtered = cases.filter(function(c) {
+        return filters.every(function(f) {
+          if (f.type === 'keyword') {
+            var all = (c.id + c.desc + c.lawyer + c.accused + c.respondent + c.petition + c.status).toLowerCase();
+            return all.indexOf(f.value) !== -1;
+          }
+          if (f.type === 'lawyer') return c.lawyer.toLowerCase().indexOf(f.value) !== -1;
+          if (f.type === 'petitionType') return c.petition.toLowerCase().indexOf(f.value) !== -1;
+          if (f.type === 'accused') return c.accused.toLowerCase().indexOf(f.value) !== -1;
+          if (f.type === 'respondent') return c.respondent.toLowerCase().indexOf(f.value) !== -1;
+          return true;
+        });
+      });
+
+      renderResults(filtered);
+    }
+
+    function renderResults(data) {
+      var tbody = document.getElementById('resultsBody');
+      var tableWrap = document.getElementById('tableWrap');
+      var noResults = document.getElementById('noResults');
+      var count = document.getElementById('resultCount');
+
+      count.textContent = data.length + ' case' + (data.length !== 1 ? 's' : '') + ' found';
+
+      if (data.length === 0) {
+        tableWrap.classList.add('hidden');
+        noResults.classList.remove('hidden');
+        return;
+      }
+      tableWrap.classList.remove('hidden');
+      noResults.classList.add('hidden');
+
+      var html = '';
+      data.forEach(function(c) {
+        var statusClass = c.status === 'Active' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700';
+        html += '<tr class="hover:bg-gray-50">' +
+          '<td class="px-4 py-3 text-sm font-medium text-primary-purple">' + c.id + '</td>' +
+          '<td class="px-4 py-3 text-sm text-gray-800">' + c.desc + '</td>' +
+          '<td class="px-4 py-3 text-sm text-gray-800">' + c.lawyer + '</td>' +
+          '<td class="px-4 py-3 text-sm text-gray-800">' + c.accused + '</td>' +
+          '<td class="px-4 py-3 text-sm text-gray-800">' + c.respondent + '</td>' +
+          '<td class="px-4 py-3"><span class="px-2 py-0.5 rounded-full text-xs bg-blue-50 text-blue-700">' + c.petition + '</span></td>' +
+          '<td class="px-4 py-3"><span class="px-2 py-0.5 rounded-full text-xs ' + statusClass + '">' + c.status + '</span></td>' +
+          '</tr>';
+      });
+      tbody.innerHTML = html;
+    }
+
+    // Close dropdowns on outside click
+    document.addEventListener('click', function(e) {
+      if (!e.target.closest('#filterBtn') && !e.target.closest('#filterDropdown')) {
+        document.getElementById('filterDropdown').style.display = 'none';
+      }
+      if (!e.target.closest('#addBtn') && !e.target.closest('#addDropdown')) {
+        document.getElementById('addDropdown').style.display = 'none';
+      }
+    });
+
+    renderResults(cases);
+  </script>
+</body>
+</html>

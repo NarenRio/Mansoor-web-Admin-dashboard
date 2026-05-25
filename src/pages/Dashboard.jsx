@@ -116,7 +116,7 @@ function Dashboard() {
     loadUsageForActiveUsers();
     loadCourtFilterOptions();
 
-    onlineRefreshRef.current = setInterval(loadOnlineUsers, 60000);
+    onlineRefreshRef.current = setInterval(loadOnlineUsers, 30000);
     return () => {
       if (onlineRefreshRef.current) {
         clearInterval(onlineRefreshRef.current);

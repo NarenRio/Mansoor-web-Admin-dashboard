@@ -247,6 +247,7 @@ export const adminAPI = {
       throw error;
     }
   },
+
 };
 
 export const publicAPI = {

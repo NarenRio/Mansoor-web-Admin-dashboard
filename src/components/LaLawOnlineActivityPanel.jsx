@@ -129,7 +129,7 @@ function LaLawOnlineActivityPanel({
   const [sortDir, setSortDir] = useState('asc');
   const [page, setPage] = useState(1);
   const [expandedUserId, setExpandedUserId] = useState(null);
-  const [panelOpen, setPanelOpen] = useState(false);
+  const [panelOpen, setPanelOpen] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
 
   const onlineCount = users.length;
@@ -418,9 +418,19 @@ function LaLawOnlineActivityPanel({
           <span className="rounded-full bg-primary-purple px-3 py-0.5 text-sm font-bold tabular-nums text-white">
             {loading ? '…' : onlineCount}
           </span>
-          {!panelOpen && !loading && (
+          {!panelOpen && !loading && error && (
+            <span className="truncate text-sm font-medium text-red-600">
+              Could not load — expand for details
+            </span>
+          )}
+          {!panelOpen && !loading && !error && onlineCount === 0 && (
             <span className="truncate text-sm text-slate-400">
-              Expand to view online advocates
+              No one online — advocates must log in on the app
+            </span>
+          )}
+          {!panelOpen && !loading && !error && onlineCount > 0 && (
+            <span className="truncate text-sm text-slate-400">
+              Expand to view advocates
             </span>
           )}
         </div>
