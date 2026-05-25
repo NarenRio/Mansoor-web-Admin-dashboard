@@ -6,6 +6,7 @@ import Dashboard from './pages/Dashboard';
 import CourtMaster from './pages/CourtMaster';
 import CourtTypeMaster from './pages/CourtTypeMaster';
 import CaseDetails from './pages/CaseDetails';
+import LawyerSearch from './pages/LawyerSearch';
 import AccountDeletionRequestPage from './pages/AccountDeletionRequestPage';
 import LaLawActivityMockupPage from './pages/LaLawActivityMockupPage';
 
@@ -78,6 +79,14 @@ function App() {
           element={
             <ProtectedRoute>
               <CaseDetails />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/lawyer-search"
+          element={
+            <ProtectedRoute>
+              <LawyerSearch />
             </ProtectedRoute>
           }
         />

@@ -234,6 +234,12 @@ function CourtMaster() {
             >
               Case Details
             </button>
+            <button
+              onClick={() => navigate('/lawyer-search')}
+              className="px-4 py-2 text-purple-100 hover:text-white hover:bg-purple-600 rounded-lg transition-colors text-sm font-medium"
+            >
+              Lawyer Search
+            </button>
           </div>
         </div>
       </header>
