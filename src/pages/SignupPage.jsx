@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { authService } from '../services/authService';
+import { INDIAN_STATES, getCitiesForState } from '../data/indianStatesAndCities';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/api';
 
@@ -9,9 +10,13 @@ function SignupPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [state, setState] = useState('');
+  const [city, setCity] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+
+  const cities = state ? getCitiesForState(state) : [];
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -33,7 +38,9 @@ function SignupPage() {
     try {
       const response = await axios.post(`${API_BASE_URL}/admin/auth/signup`, {
         email,
-        password
+        password,
+        state,
+        city
       });
 
       if (response.data.success) {
@@ -121,6 +128,48 @@ function SignupPage() {
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
               />
+            </div>
+            <div>
+              <label htmlFor="state" className="block text-sm font-medium text-gray-700 mb-1">
+                State
+              </label>
+              <select
+                id="state"
+                name="state"
+                required
+                className="appearance-none relative block w-full px-3 py-2 border border-gray-300 text-gray-900 rounded-md focus:outline-none focus:ring-primary-purple focus:border-primary-purple focus:z-10 sm:text-sm"
+                value={state}
+                onChange={(e) => {
+                  setState(e.target.value);
+                  setCity('');
+                }}
+              >
+                <option value="">Select State</option>
+                {INDIAN_STATES.map((s) => (
+                  <option key={s} value={s}>{s}</option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label htmlFor="city" className="block text-sm font-medium text-gray-700 mb-1">
+                City
+              </label>
+              <select
+                id="city"
+                name="city"
+                required
+                disabled={!state}
+                className={`appearance-none relative block w-full px-3 py-2 border border-gray-300 text-gray-900 rounded-md focus:outline-none focus:ring-primary-purple focus:border-primary-purple focus:z-10 sm:text-sm ${
+                  !state ? 'bg-gray-100 cursor-not-allowed' : ''
+                }`}
+                value={city}
+                onChange={(e) => setCity(e.target.value)}
+              >
+                <option value="">{state ? 'Select City' : 'Select a state first'}</option>
+                {cities.map((c) => (
+                  <option key={c} value={c}>{c}</option>
+                ))}
+              </select>
             </div>
           </div>
 
