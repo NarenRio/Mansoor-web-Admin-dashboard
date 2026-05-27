@@ -200,22 +200,60 @@ function CaseDetails() {
 
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Search Row */}
-        <div className="flex items-center gap-3 flex-wrap mb-6">
-          {/* Filter Boxes */}
-          {filters.map((filter) => (
-            <div
-              key={filter.id}
-              className="flex items-center border border-gray-300 rounded-lg overflow-hidden bg-white"
+        {/* Filter Toolbar */}
+        <div className="flex items-center gap-2 flex-wrap mb-6">
+          {/* Filter toggle button */}
+          <div className="relative" ref={filterRef}>
+            <button
+              onClick={() => {
+                setShowFilterDropdown(!showFilterDropdown);
+                setShowAddDropdown(false);
+              }}
+              className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded border border-gray-300 bg-white shadow-sm hover:bg-gray-50"
+              title="Add filter"
             >
-              <span className="px-3 py-2.5 bg-gray-100 text-xs font-semibold text-gray-600 border-r border-gray-300 whitespace-nowrap">
+              <svg className="h-5 w-5 text-amber-500" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+              </svg>
+            </button>
+            {showFilterDropdown && (
+              <div className="absolute left-0 top-full z-50 mt-1 min-w-[11rem] overflow-hidden rounded border border-gray-300 bg-white shadow-lg">
+                <p className="border-b border-gray-200 px-3 py-2 text-sm font-bold text-gray-900">
+                  Add Filter
+                </p>
+                {filterOptions.map((opt) => (
+                  <button
+                    key={opt.key}
+                    onClick={() => selectFilter(opt.key)}
+                    className="block w-full px-3 py-2.5 text-left text-sm text-gray-800 hover:bg-gray-100"
+                  >
+                    {opt.label}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Active filters */}
+          {filters.map((filter) => (
+            <div key={filter.id} className="inline-flex shrink-0 items-center gap-2">
+              {filter.id !== 0 && (
+                <button
+                  onClick={() => removeFilter(filter.id)}
+                  className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded bg-[#1a3a6b] text-white shadow-sm transition-colors hover:bg-[#152e55]"
+                  title="Remove filter"
+                >
+                  <span className="text-lg font-bold leading-none">&minus;</span>
+                </button>
+              )}
+              <label className="shrink-0 text-sm font-semibold text-gray-800">
                 {getLabel(filter.type)}
-              </span>
+              </label>
               {filter.type === 'petitionType' ? (
                 <select
                   value={filter.value}
                   onChange={(e) => updateFilterValue(filter.id, e.target.value)}
-                  className="px-3 py-2.5 text-sm border-none outline-none w-44 bg-white"
+                  className="h-9 rounded border border-gray-300 bg-white px-2.5 text-sm text-gray-800 shadow-sm focus:border-[#1a3a6b] focus:outline-none focus:ring-1 focus:ring-[#1a3a6b] w-[9.5rem]"
                 >
                   <option value="">All</option>
                   {petitionTypeOptions.map((pt) => (
@@ -226,54 +264,17 @@ function CaseDetails() {
                 </select>
               ) : (
                 <input
-                  type="text"
+                  type="search"
                   value={filter.value}
                   onChange={(e) => updateFilterValue(filter.id, e.target.value)}
                   placeholder={getPlaceholder(filter.type)}
-                  className="px-3 py-2.5 text-sm border-none outline-none w-44"
+                  className="h-9 rounded border border-gray-300 bg-white px-2.5 text-sm text-gray-800 shadow-sm focus:border-[#1a3a6b] focus:outline-none focus:ring-1 focus:ring-[#1a3a6b] min-w-[12rem]"
                 />
-              )}
-              {filter.id !== 0 && (
-                <button
-                  onClick={() => removeFilter(filter.id)}
-                  className="px-2 text-gray-400 hover:text-red-500 text-lg"
-                >
-                  &times;
-                </button>
               )}
             </div>
           ))}
 
-          {/* Filter Button */}
-          <div className="relative" ref={filterRef}>
-            <button
-              onClick={() => {
-                setShowFilterDropdown(!showFilterDropdown);
-                setShowAddDropdown(false);
-              }}
-              className="flex items-center gap-2 px-4 py-2.5 bg-primary-purple text-white rounded-lg text-sm font-medium hover:bg-primary-purple-dark transition-colors"
-            >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
-              </svg>
-              Filter
-            </button>
-            {showFilterDropdown && (
-              <div className="absolute left-0 top-full mt-1 z-50 w-48 bg-white border border-gray-200 rounded-lg shadow-lg">
-                {filterOptions.map((opt) => (
-                  <button
-                    key={opt.key}
-                    onClick={() => selectFilter(opt.key)}
-                    className="block w-full text-left px-4 py-2.5 text-sm text-gray-700 hover:bg-purple-50 transition-colors"
-                  >
-                    {opt.label}
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
-
-          {/* Add Button */}
+          {/* Add another filter button */}
           {filters.length > 0 && (
             <div className="relative" ref={addRef}>
               <button
@@ -281,19 +282,23 @@ function CaseDetails() {
                   setShowAddDropdown(!showAddDropdown);
                   setShowFilterDropdown(false);
                 }}
-                className="flex items-center justify-center p-2.5 bg-primary-purple text-white rounded-lg hover:bg-primary-purple-dark transition-colors"
+                className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded bg-[#1a3a6b] text-white shadow-sm transition-colors hover:bg-[#152e55]"
+                title="Add another filter"
               >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
                 </svg>
               </button>
               {showAddDropdown && (
-                <div className="absolute left-0 top-full mt-1 z-50 w-48 bg-white border border-gray-200 rounded-lg shadow-lg">
+                <div className="absolute left-0 top-full z-50 mt-1 min-w-[11rem] overflow-hidden rounded border border-gray-300 bg-white shadow-lg">
+                  <p className="border-b border-gray-200 px-3 py-2 text-sm font-bold text-gray-900">
+                    Add Filter
+                  </p>
                   {filterOptions.map((opt) => (
                     <button
                       key={opt.key}
                       onClick={() => addNewFilter(opt.key)}
-                      className="block w-full text-left px-4 py-2.5 text-sm text-gray-700 hover:bg-purple-50 transition-colors"
+                      className="block w-full px-3 py-2.5 text-left text-sm text-gray-800 hover:bg-gray-100"
                     >
                       {opt.label}
                     </button>
@@ -301,6 +306,16 @@ function CaseDetails() {
                 </div>
               )}
             </div>
+          )}
+
+          {/* Clear all filters */}
+          {filters.some((f) => f.value.trim()) && (
+            <button
+              onClick={() => setFilters([{ id: 0, type: 'keyword', value: '' }])}
+              className="ml-1 h-9 rounded bg-red-50 px-3 text-sm font-medium text-red-600 hover:bg-red-100 transition-colors"
+            >
+              Clear all
+            </button>
           )}
         </div>
 
