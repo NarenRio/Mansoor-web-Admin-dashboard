@@ -1,102 +1,410 @@
-import { useState, useEffect, useRef, Fragment } from 'react';
+import { useState, useEffect, useRef, useMemo, Fragment } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { authService } from '../services/authService';
-import { REGION_DISTRICTS, DISTRICT_CITIES_EXTRA } from '../data/districtsByState';
+import { adminAPI } from '../services/api';
+import {
+  ALL_INDIAN_STATES,
+  getDistrictsForState,
+  getAllDistricts,
+  getCitiesForDistrict,
+  getCitiesForDistrictName,
+  getAllCitiesForState,
+  getAllCities,
+} from '../data/districtsByState';
 
-const MOCK_LAWYERS = [
-  { id: 1, name: 'Adv. Rajesh Kumar', email: 'rajesh.kumar@lawfirm.in', phone: '+91 98765 43210', specialization: 'Criminal Law', firm: 'Kumar & Associates', city: 'Chennai', district: 'Chennai', state: 'Tamil Nadu', pincode: '600001', address: '12, Mount Road, Chennai', cases: 47, status: 'Active' },
-  { id: 2, name: 'Adv. Priya Nair', email: 'priya.nair@legalaid.in', phone: '+91 94567 12345', specialization: 'Family Law', firm: 'Nair Legal Services', city: 'Kochi', district: 'Ernakulam', state: 'Kerala', pincode: '682001', address: '8, MG Road, Kochi', cases: 32, status: 'Active' },
-  { id: 3, name: 'Adv. Suresh Babu', email: 'suresh.babu@counsel.in', phone: '+91 99887 76655', specialization: 'Property Law', firm: 'Babu & Partners', city: 'Coimbatore', district: 'Coimbatore', state: 'Tamil Nadu', pincode: '641001', address: '45, RS Puram, Coimbatore', cases: 58, status: 'Active' },
-  { id: 4, name: 'Adv. Meena Sundaram', email: 'meena.s@advocates.in', phone: '+91 87654 32109', specialization: 'Civil Law', firm: 'Sundaram Legal Chambers', city: 'Madurai', district: 'Madurai', state: 'Tamil Nadu', pincode: '625001', address: '22, West Masi Street, Madurai', cases: 25, status: 'Active' },
-  { id: 5, name: 'Adv. Arun Prakash', email: 'arun.p@lawhouse.in', phone: '+91 97531 24680', specialization: 'Corporate Law', firm: 'Prakash & Co', city: 'Bengaluru', district: 'Bengaluru Urban', state: 'Karnataka', pincode: '560001', address: '101, MG Road, Bengaluru', cases: 73, status: 'Active' },
-  { id: 6, name: 'Adv. Lakshmi Devi', email: 'lakshmi.d@lawcorp.in', phone: '+91 86420 97531', specialization: 'Tax Law', firm: 'Devi & Associates', city: 'Thiruvananthapuram', district: 'Thiruvananthapuram', state: 'Kerala', pincode: '695001', address: '3, Vazhuthacaud, Thiruvananthapuram', cases: 19, status: 'Active' },
-  { id: 7, name: 'Adv. Venkatesh Iyer', email: 'venkatesh@iyerlaw.in', phone: '+91 91234 56789', specialization: 'Criminal Law', firm: 'Iyer Legal Solutions', city: 'Salem', district: 'Salem', state: 'Tamil Nadu', pincode: '636001', address: '67, Cherry Road, Salem', cases: 41, status: 'Inactive' },
-  { id: 8, name: 'Adv. Divya Menon', email: 'divya.menon@counsel.in', phone: '+91 90876 54321', specialization: 'Labour Law', firm: 'Menon & Menon Advocates', city: 'Kozhikode', district: 'Kozhikode', state: 'Kerala', pincode: '673001', address: '15, SM Street, Kozhikode', cases: 28, status: 'Active' },
-  { id: 9, name: 'Adv. Karthik Rajan', email: 'karthik.r@advocates.in', phone: '+91 89012 34567', specialization: 'Intellectual Property', firm: 'Rajan IP Counsel', city: 'Mysuru', district: 'Mysuru', state: 'Karnataka', pincode: '570001', address: '9, Sayyaji Rao Road, Mysuru', cases: 15, status: 'Active' },
-  { id: 10, name: 'Adv. Anitha Krishnan', email: 'anitha.k@legalfirm.in', phone: '+91 78901 23456', specialization: 'Family Law', firm: 'Krishnan & Associates', city: 'Tiruchirappalli', district: 'Tiruchirappalli', state: 'Tamil Nadu', pincode: '620001', address: '31, Cantonment, Tiruchirappalli', cases: 36, status: 'Active' },
-  { id: 11, name: 'Adv. Mohan Das', email: 'mohan.das@lawpoint.in', phone: '+91 96543 21098', specialization: 'Property Law', firm: 'Das Legal Group', city: 'Mangaluru', district: 'Dakshina Kannada', state: 'Karnataka', pincode: '575001', address: '44, Hampankatta, Mangaluru', cases: 52, status: 'Active' },
-  { id: 12, name: 'Adv. Saranya Pillai', email: 'saranya.p@lawaid.in', phone: '+91 85432 10987', specialization: 'Consumer Law', firm: 'Pillai Law Office', city: 'Kollam', district: 'Kollam', state: 'Kerala', pincode: '691001', address: '7, Chinnakkada, Kollam', cases: 22, status: 'Active' },
-  { id: 13, name: 'Adv. Gopal Reddy', email: 'gopal.r@reddy-law.in', phone: '+91 74321 09876', specialization: 'Civil Law', firm: 'Reddy & Reddy Associates', city: 'Belagavi', district: 'Belagavi', state: 'Karnataka', pincode: '590001', address: '56, College Road, Belagavi', cases: 61, status: 'Active' },
-  { id: 14, name: 'Adv. Nithya Shankar', email: 'nithya.s@lawchambers.in', phone: '+91 93210 98765', specialization: 'Criminal Law', firm: 'Shankar Legal Services', city: 'Vellore', district: 'Vellore', state: 'Tamil Nadu', pincode: '632001', address: '18, Long Bazaar, Vellore', cases: 33, status: 'Active' },
-  { id: 15, name: 'Adv. Ramesh Hegde', email: 'ramesh.h@hegdelaw.in', phone: '+91 82109 87654', specialization: 'Corporate Law', firm: 'Hegde & Partners', city: 'Hubballi', district: 'Dharwad', state: 'Karnataka', pincode: '580001', address: '29, Lamington Road, Hubballi', cases: 44, status: 'Inactive' },
-  { id: 16, name: 'Adv. Jayanthi Raman', email: 'jayanthi.r@jrlaw.in', phone: '+91 71098 76543', specialization: 'Tax Law', firm: 'Raman Tax Advocates', city: 'Thanjavur', district: 'Thanjavur', state: 'Tamil Nadu', pincode: '613001', address: '5, South Main Street, Thanjavur', cases: 17, status: 'Active' },
-  { id: 17, name: 'Adv. Harish Gowda', email: 'harish.g@advocatesg.in', phone: '+91 90987 65432', specialization: 'Labour Law', firm: 'Gowda Law Firm', city: 'Hassan', district: 'Hassan', state: 'Karnataka', pincode: '573201', address: '12, BM Road, Hassan', cases: 29, status: 'Active' },
-  { id: 18, name: 'Adv. Revathi Sundaram', email: 'revathi@sundaramlaw.in', phone: '+91 80987 65432', specialization: 'Family Law', firm: 'Sundaram Legal Aid', city: 'Tirunelveli', district: 'Tirunelveli', state: 'Tamil Nadu', pincode: '627001', address: '14, High Ground, Tirunelveli', cases: 38, status: 'Active' },
-  { id: 19, name: 'Adv. Siddharth Jain', email: 'siddharth@jainlaw.in', phone: '+91 79876 54321', specialization: 'Intellectual Property', firm: 'Jain IP Associates', city: 'Whitefield', district: 'Bengaluru Urban', state: 'Karnataka', pincode: '560066', address: '202, ITPL Road, Whitefield', cases: 21, status: 'Active' },
-  { id: 20, name: 'Adv. Deepa Thomas', email: 'deepa.t@thomaslaw.in', phone: '+91 68765 43210', specialization: 'Consumer Law', firm: 'Thomas & Associates', city: 'Thrissur', district: 'Thrissur', state: 'Kerala', pincode: '680001', address: '33, Round South, Thrissur', cases: 26, status: 'Active' },
+const ALL_STATES = [...ALL_INDIAN_STATES].sort();
+
+const RIO_NAVY_BTN =
+  'inline-flex h-9 w-9 shrink-0 items-center justify-center rounded bg-[#1a3a6b] text-white shadow-sm transition-colors hover:bg-[#152e55] disabled:cursor-not-allowed disabled:opacity-50';
+const RIO_TOOLBAR_INPUT =
+  'h-9 rounded border border-gray-300 bg-white px-2.5 text-sm text-gray-800 shadow-sm focus:border-[#1a3a6b] focus:outline-none focus:ring-1 focus:ring-[#1a3a6b]';
+
+const FILTER_MENU_OPTIONS = [
+  { id: 'keyword', label: 'Keyword' },
+  { id: 'name', label: 'Name' },
+  { id: 'region', label: 'Region' },
+  { id: 'qualification', label: 'Qualification' },
 ];
 
-const SPECIALIZATIONS = [
-  'Criminal Law', 'Family Law', 'Property Law', 'Civil Law',
-  'Corporate Law', 'Tax Law', 'Labour Law', 'Intellectual Property', 'Consumer Law',
-];
-
-const ALL_STATES = Object.keys(REGION_DISTRICTS).sort();
-
-function getDistrictsForState(state) {
-  if (!state) return [];
-  return (REGION_DISTRICTS[state] || []).sort();
+function getInitials(name) {
+  if (!name) return '?';
+  return name
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((p) => p[0])
+    .join('')
+    .toUpperCase();
 }
 
-function getCitiesForDistrict(state, district) {
-  if (!state || !district) return [];
-  const extras = DISTRICT_CITIES_EXTRA[state]?.[district] || [];
-  return extras.length > 0 ? extras.sort() : [district];
+function normalizeText(value) {
+  return String(value || '').toLowerCase().trim();
 }
 
-const filterOptions = [
-  { key: 'keyword', label: 'Keyword', placeholder: 'Name, firm, email...' },
-  { key: 'state', label: 'State', placeholder: 'Select state...' },
-  { key: 'district', label: 'District', placeholder: 'Select district...' },
-  { key: 'city', label: 'City', placeholder: 'City name...' },
-  { key: 'specialization', label: 'Specialization', placeholder: 'Select specialization...' },
-];
+function nameMatches(lawyerName, query) {
+  const name = normalizeText(lawyerName);
+  const q = normalizeText(query);
+  if (!q) return false;
+  if (name.includes(q)) return true;
+  const stripped = name.replace(/^adv\.?\s*/i, '');
+  return stripped.includes(q) || q.includes(stripped);
+}
+
+function mapAdvocateToLawyer(row) {
+  return {
+    id: row.id,
+    name: row.name || '',
+    email: row.email || '',
+    phone: row.phone || '',
+    qualification: row.qualification || '',
+    firm: row.firmName || row.firm || '—',
+    city: row.city || '',
+    state: row.state || '',
+    pincode: row.pincode || '',
+    district: row.city || '',
+    address: row.address || '',
+    status: row.status || 'Pending',
+    cases: row.cases ?? 0,
+    createdAt: row.createdAt,
+  };
+}
+
+function filterLawyersClientSide(lawyers, params = {}) {
+  const { state, district, city, name, keyword, qualification, districtCities } = params;
+  let list = [...lawyers];
+
+  if (state?.trim()) {
+    const s = normalizeText(state);
+    list = list.filter(
+      (l) =>
+        normalizeText(l.state) === s ||
+        normalizeText(l.address).includes(s)
+    );
+  }
+
+  if (district?.trim()) {
+    const d = normalizeText(district);
+    const cityList = String(districtCities || '')
+      .split(',')
+      .map((c) => normalizeText(c))
+      .filter(Boolean);
+    list = list.filter((l) => {
+      const lc = normalizeText(l.city);
+      if (cityList.length && cityList.includes(lc)) return true;
+      if (lc === d) return true;
+      return normalizeText(l.address).includes(d);
+    });
+  }
+
+  if (city?.trim()) {
+    const c = normalizeText(city);
+    list = list.filter(
+      (l) => normalizeText(l.city) === c || normalizeText(l.address).includes(c)
+    );
+  }
+
+  if (name?.trim()) {
+    list = list.filter((l) => nameMatches(l.name, name));
+  }
+
+  if (keyword?.trim()) {
+    const k = normalizeText(keyword);
+    list = list.filter((l) => {
+      const blob = [
+        l.name,
+        l.email,
+        l.phone,
+        l.qualification,
+        l.firm,
+        l.city,
+        l.address,
+      ]
+        .map(normalizeText)
+        .join(' ');
+      return blob.includes(k);
+    });
+  }
+
+  if (qualification?.trim()) {
+    const q = normalizeText(qualification);
+    list = list.filter((l) => normalizeText(l.qualification) === q);
+  }
+
+  return list;
+}
+
+async function fetchLawyersForSearch(params = {}) {
+  try {
+    const res = await adminAPI.getLawyersForSearch(params);
+    if (res.success) return res.data || [];
+    return [];
+  } catch (err) {
+    if (err.response?.status !== 404) throw err;
+    const res = await adminAPI.getAllAdvocates();
+    if (!res.success) return [];
+    const mapped = (res.data || []).map(mapAdvocateToLawyer);
+    return filterLawyersClientSide(mapped, params);
+  }
+}
 
 function LawyerSearch() {
   const navigate = useNavigate();
   const admin = authService.getAdmin();
 
-  const [filters, setFilters] = useState([
-    { id: 0, type: 'keyword', value: '' },
-  ]);
-  const [filterCount, setFilterCount] = useState(0);
-  const [showFilterDropdown, setShowFilterDropdown] = useState(false);
-  const [showAddDropdown, setShowAddDropdown] = useState(false);
+  const [activeFilters, setActiveFilters] = useState([]);
+  const [addFilterMenuOpen, setAddFilterMenuOpen] = useState(false);
+  const [keywordFilter, setKeywordFilter] = useState('');
+  const [nameFilter, setNameFilter] = useState('');
+  const [qualificationFilter, setQualificationFilter] = useState('');
+  const [allLawyers, setAllLawyers] = useState([]);
+  const [lawyersLoading, setLawyersLoading] = useState(true);
+  const [fetchError, setFetchError] = useState(null);
+  const [regionState, setRegionState] = useState('');
+  const [regionDistrict, setRegionDistrict] = useState('');
+  const [regionCity, setRegionCity] = useState('');
 
   const [results, setResults] = useState([]);
   const [hasSearched, setHasSearched] = useState(false);
   const [loading, setLoading] = useState(false);
   const [expandedRow, setExpandedRow] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
+  const [registeredCount, setRegisteredCount] = useState(null);
+  const [dbFilterOptions, setDbFilterOptions] = useState({ states: [], cities: [] });
   const resultsPerPage = 10;
 
-  const filterRef = useRef(null);
-  const addRef = useRef(null);
+  const toolbarRef = useRef(null);
+  const funnelBtnRef = useRef(null);
+  const plusBtnRef = useRef(null);
+  const filterMenuRef = useRef(null);
+  const [filterMenuPos, setFilterMenuPos] = useState({ top: 0, left: 0 });
+
+  const openAddFilterMenu = () => {
+    const anchor = funnelBtnRef.current;
+    if (anchor) {
+      const rect = anchor.getBoundingClientRect();
+      setFilterMenuPos({ top: rect.bottom + 4, left: rect.left });
+    }
+    setAddFilterMenuOpen(true);
+  };
+
+  const renderAddFilterMenu = () =>
+    addFilterMenuOpen ? (
+      <div
+        ref={filterMenuRef}
+        className="fixed z-[200] min-w-[11rem] overflow-hidden rounded border border-gray-300 bg-white shadow-lg"
+        style={{ top: filterMenuPos.top, left: filterMenuPos.left }}
+      >
+        <p className="border-b border-gray-200 px-3 py-2 text-sm font-bold text-gray-900">
+          Add Filter
+        </p>
+        {FILTER_MENU_OPTIONS.map((opt) => {
+          const alreadyAdded = activeFilters.includes(opt.id);
+          return (
+            <button
+              key={opt.id}
+              type="button"
+              disabled={alreadyAdded}
+              onClick={() => addFilter(opt.id)}
+              className={`block w-full px-3 py-2.5 text-left text-sm ${
+                alreadyAdded
+                  ? 'cursor-not-allowed text-gray-400 bg-gray-50'
+                  : 'text-gray-800 hover:bg-gray-100'
+              }`}
+            >
+              {opt.label}
+              {alreadyAdded ? ' (added)' : ''}
+            </button>
+          );
+        })}
+      </div>
+    ) : null;
+
+  const stateOptions = useMemo(() => {
+    const merged = new Set([...ALL_STATES, ...(dbFilterOptions.states || [])]);
+    return [...merged].sort();
+  }, [dbFilterOptions.states]);
+
+  const districtOptions = useMemo(() => {
+    const fromStatic = regionState
+      ? getDistrictsForState(regionState)
+      : getAllDistricts();
+    const merged = new Set(fromStatic);
+    (dbFilterOptions.districts || []).forEach((d) => merged.add(d));
+    return [...merged].sort();
+  }, [regionState, dbFilterOptions.districts]);
+
+  const cityOptions = useMemo(() => {
+    let fromStatic = [];
+    if (regionState && regionDistrict) {
+      fromStatic = getCitiesForDistrict(regionState, regionDistrict);
+    } else if (regionDistrict) {
+      fromStatic = getCitiesForDistrictName(regionDistrict);
+    } else if (regionState) {
+      fromStatic = getAllCitiesForState(regionState);
+    } else {
+      fromStatic = getAllCities();
+    }
+    const merged = new Set(fromStatic);
+    (dbFilterOptions.cities || []).forEach((c) => merged.add(c));
+    return [...merged].sort();
+  }, [regionState, regionDistrict, dbFilterOptions.cities]);
+
+  const qualificationOptions = useMemo(() => {
+    const set = new Set();
+    allLawyers.forEach((l) => {
+      if (l.qualification?.trim()) set.add(l.qualification.trim());
+    });
+    return [...set].sort();
+  }, [allLawyers]);
+
+  const loadRegisteredCount = async (fallbackTotal) => {
+    try {
+      const res = await adminAPI.getRegisteredLawyerCount();
+      if (res.success) {
+        setRegisteredCount(res.data?.total ?? 0);
+        return;
+      }
+    } catch (err) {
+      if (err.response?.status !== 404) {
+        console.error('Error fetching registered lawyer count:', err);
+      }
+    }
+    if (fallbackTotal !== undefined) setRegisteredCount(fallbackTotal);
+  };
+
+  const loadRegisteredLawyers = async () => {
+    try {
+      setLawyersLoading(true);
+      setFetchError(null);
+      const lawyers = await fetchLawyersForSearch({});
+
+      // Default view: show all registered lawyers sorted A → Z.
+      const sorted = [...lawyers].sort((a, b) =>
+        (a.name || '').localeCompare(b.name || '', undefined, {
+          sensitivity: 'base',
+        })
+      );
+
+      setAllLawyers(sorted);
+      setResults(sorted);
+      setHasSearched(true);
+      await loadRegisteredCount(sorted.length);
+
+      if (sorted.length === 0) {
+        setFetchError('No registered lawyers found in the database.');
+      }
+    } catch (err) {
+      const is404 = err.response?.status === 404;
+      setFetchError(
+        is404
+          ? 'Lawyer search API not found. Restart the backend (npm run dev in Mansoor-s-App-Backend) and click refresh.'
+          : err.response?.data?.message || err.message || 'Failed to load lawyers'
+      );
+      setAllLawyers([]);
+      setResults([]);
+      setRegisteredCount(0);
+      setHasSearched(false);
+    } finally {
+      setLawyersLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadRegisteredLawyers();
+    adminAPI
+      .getLawyerSearchFilterOptions()
+      .then((res) => {
+        if (res.success && res.data) setDbFilterOptions(res.data);
+      })
+      .catch(() => {});
+  }, []);
 
   useEffect(() => {
     const handler = (e) => {
-      if (filterRef.current && !filterRef.current.contains(e.target))
-        setShowFilterDropdown(false);
-      if (addRef.current && !addRef.current.contains(e.target))
-        setShowAddDropdown(false);
+      const inToolbar = toolbarRef.current?.contains(e.target);
+      const inMenu = filterMenuRef.current?.contains(e.target);
+      if (!inToolbar && !inMenu) {
+        setAddFilterMenuOpen(false);
+      }
     };
     document.addEventListener('mousedown', handler);
     return () => document.removeEventListener('mousedown', handler);
   }, []);
 
   useEffect(() => {
-    const timeout = setTimeout(() => runSearch(), 400);
+    const timeout = setTimeout(() => {
+      if (!lawyersLoading) runSearch();
+    }, 400);
     return () => clearTimeout(timeout);
-  }, [filters]);
+  }, [
+    lawyersLoading,
+    activeFilters,
+    keywordFilter,
+    nameFilter,
+    qualificationFilter,
+    regionState,
+    regionDistrict,
+    regionCity,
+  ]);
 
-  const getFilterValue = (type) =>
-    filters.find((f) => f.type === type)?.value || '';
+  const hasActiveFilterValues =
+    keywordFilter.trim() ||
+    nameFilter.trim() ||
+    qualificationFilter ||
+    regionState ||
+    regionDistrict ||
+    regionCity;
 
-  const runSearch = () => {
-    const activeFilters = filters.filter((f) => f.value.trim());
+  const buildSearchParams = () => {
+    const params = {};
+    if (activeFilters.includes('region')) {
+      if (regionState) params.state = regionState;
+      if (regionDistrict) {
+        params.district = regionDistrict;
+        const cities = regionState
+          ? getCitiesForDistrict(regionState, regionDistrict)
+          : getCitiesForDistrictName(regionDistrict);
+        if (cities.length) params.districtCities = cities.join(',');
+      }
+      if (regionCity) params.city = regionCity;
+    }
+    if (activeFilters.includes('name') && nameFilter.trim()) {
+      params.name = nameFilter.trim();
+    }
+    if (activeFilters.includes('qualification') && qualificationFilter) {
+      params.qualification = qualificationFilter;
+    }
+    if (activeFilters.includes('keyword') && keywordFilter.trim()) {
+      params.keyword = keywordFilter.trim();
+    }
+    return params;
+  };
+
+  const hasSearchableValues = () => {
+    if (activeFilters.includes('keyword') && keywordFilter.trim()) return true;
+    if (activeFilters.includes('name') && nameFilter.trim()) return true;
+    if (activeFilters.includes('qualification') && qualificationFilter) return true;
+    if (
+      activeFilters.includes('region') &&
+      (regionState || regionDistrict || regionCity)
+    ) {
+      return true;
+    }
+    return false;
+  };
+
+  const runSearch = async () => {
     if (activeFilters.length === 0) {
-      setResults([]);
-      setHasSearched(false);
+      setResults(allLawyers);
+      setHasSearched(true);
+      setCurrentPage(1);
+      return;
+    }
+
+    if (!hasSearchableValues()) {
+      setResults(allLawyers);
+      setHasSearched(true);
+      setCurrentPage(1);
       return;
     }
 
@@ -104,155 +412,88 @@ function LawyerSearch() {
     setHasSearched(true);
     setCurrentPage(1);
 
-    setTimeout(() => {
-      let filtered = [...MOCK_LAWYERS];
-
-      activeFilters.forEach((f) => {
-        const val = f.value.trim().toLowerCase();
-        switch (f.type) {
-          case 'state':
-            filtered = filtered.filter((l) => l.state.toLowerCase() === val);
-            break;
-          case 'district':
-            filtered = filtered.filter((l) => l.district.toLowerCase() === val);
-            break;
-          case 'city':
-            filtered = filtered.filter((l) => l.city.toLowerCase().includes(val));
-            break;
-          case 'specialization':
-            filtered = filtered.filter((l) => l.specialization.toLowerCase() === val);
-            break;
-          case 'keyword':
-            filtered = filtered.filter(
-              (l) =>
-                l.name.toLowerCase().includes(val) ||
-                l.firm.toLowerCase().includes(val) ||
-                l.specialization.toLowerCase().includes(val) ||
-                l.email.toLowerCase().includes(val) ||
-                l.city.toLowerCase().includes(val)
-            );
-            break;
-        }
-      });
-
-      setResults(filtered);
+    try {
+      const params = buildSearchParams();
+      const lawyers = await fetchLawyersForSearch(params);
+      setResults(lawyers);
+      setFetchError(null);
+    } catch (err) {
+      setResults([]);
+      const is404 = err.response?.status === 404;
+      setFetchError(
+        is404
+          ? 'Lawyer search API not found. Restart the backend and click refresh.'
+          : err.response?.data?.message || err.message || 'Search failed'
+      );
+    } finally {
       setLoading(false);
-    }, 300);
+    }
   };
 
-  const selectFilter = (type) => {
-    setFilters((prev) =>
-      prev.map((f) => (f.id === 0 ? { ...f, type, value: '' } : f))
-    );
-    setShowFilterDropdown(false);
-  };
-
-  const addNewFilter = (type) => {
-    const newId = filterCount + 1;
-    setFilterCount(newId);
-    setFilters((prev) => [...prev, { id: newId, type, value: '' }]);
-    setShowAddDropdown(false);
+  const addFilter = (id) => {
+    setAddFilterMenuOpen(false);
+    setActiveFilters((prev) => (prev.includes(id) ? prev : [...prev, id]));
   };
 
   const removeFilter = (id) => {
-    setFilters((prev) => prev.filter((f) => f.id !== id));
-  };
-
-  const updateFilterValue = (id, value) => {
-    setFilters((prev) =>
-      prev.map((f) => (f.id === id ? { ...f, value } : f))
-    );
-  };
-
-  const getLabel = (type) =>
-    filterOptions.find((o) => o.key === type)?.label || 'Keyword';
-
-  const getPlaceholder = (type) =>
-    filterOptions.find((o) => o.key === type)?.placeholder || 'Search...';
-
-  const renderFilterInput = (filter) => {
-    switch (filter.type) {
-      case 'state':
-        return (
-          <select
-            value={filter.value}
-            onChange={(e) => updateFilterValue(filter.id, e.target.value)}
-            className="px-3 py-2.5 text-sm border-none outline-none w-48 bg-white"
-          >
-            <option value="">All</option>
-            {ALL_STATES.map((s) => (
-              <option key={s} value={s}>{s}</option>
-            ))}
-          </select>
-        );
-      case 'district': {
-        const stateVal = getFilterValue('state');
-        const districts = getDistrictsForState(stateVal);
-        return (
-          <select
-            value={filter.value}
-            onChange={(e) => updateFilterValue(filter.id, e.target.value)}
-            className="px-3 py-2.5 text-sm border-none outline-none w-48 bg-white"
-          >
-            <option value="">All</option>
-            {districts.map((d) => (
-              <option key={d} value={d}>{d}</option>
-            ))}
-          </select>
-        );
-      }
-      case 'city': {
-        const stateVal = getFilterValue('state');
-        const districtVal = getFilterValue('district');
-        const cities = getCitiesForDistrict(stateVal, districtVal);
-        if (cities.length > 0) {
-          return (
-            <select
-              value={filter.value}
-              onChange={(e) => updateFilterValue(filter.id, e.target.value)}
-              className="px-3 py-2.5 text-sm border-none outline-none w-48 bg-white"
-            >
-              <option value="">All</option>
-              {cities.map((c) => (
-                <option key={c} value={c}>{c}</option>
-              ))}
-            </select>
-          );
-        }
-        return (
-          <input
-            type="text"
-            value={filter.value}
-            onChange={(e) => updateFilterValue(filter.id, e.target.value)}
-            placeholder={getPlaceholder(filter.type)}
-            className="px-3 py-2.5 text-sm border-none outline-none w-48"
-          />
-        );
-      }
-      case 'specialization':
-        return (
-          <select
-            value={filter.value}
-            onChange={(e) => updateFilterValue(filter.id, e.target.value)}
-            className="px-3 py-2.5 text-sm border-none outline-none w-48 bg-white"
-          >
-            <option value="">All</option>
-            {SPECIALIZATIONS.map((s) => (
-              <option key={s} value={s}>{s}</option>
-            ))}
-          </select>
-        );
-      default:
-        return (
-          <input
-            type="text"
-            value={filter.value}
-            onChange={(e) => updateFilterValue(filter.id, e.target.value)}
-            placeholder={getPlaceholder(filter.type)}
-            className="px-3 py-2.5 text-sm border-none outline-none w-48"
-          />
-        );
+    setActiveFilters((prev) => prev.filter((f) => f !== id));
+    if (id === 'keyword') setKeywordFilter('');
+    if (id === 'name') setNameFilter('');
+    if (id === 'qualification') setQualificationFilter('');
+    if (id === 'region') {
+      setRegionState('');
+      setRegionDistrict('');
+      setRegionCity('');
     }
+  };
+
+  const removeAllFilters = () => {
+    setActiveFilters([]);
+    setKeywordFilter('');
+    setNameFilter('');
+    setQualificationFilter('');
+    setRegionState('');
+    setRegionDistrict('');
+    setRegionCity('');
+    setResults(allLawyers);
+    setHasSearched(true);
+    setCurrentPage(1);
+  };
+
+  const clearFilterValues = () => {
+    setKeywordFilter('');
+    setNameFilter('');
+    setQualificationFilter('');
+    setRegionState('');
+    setRegionDistrict('');
+    setRegionCity('');
+  };
+
+  const filterLabel = (id) =>
+    FILTER_MENU_OPTIONS.find((o) => o.id === id)?.label || id;
+
+  const handleStateChange = (value) => {
+    setRegionState(value);
+    if (
+      regionDistrict &&
+      value &&
+      !getDistrictsForState(value).includes(regionDistrict)
+    ) {
+      setRegionDistrict('');
+      setRegionCity('');
+    } else if (!value && regionDistrict) {
+      setRegionCity('');
+    } else if (!value) {
+      setRegionDistrict('');
+      setRegionCity('');
+    } else {
+      setRegionCity('');
+    }
+  };
+
+  const handleDistrictChange = (value) => {
+    setRegionDistrict(value);
+    setRegionCity('');
   };
 
   const totalPages = Math.ceil(results.length / resultsPerPage);
@@ -326,89 +567,23 @@ function LawyerSearch() {
 
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Search Row — filter chips + Filter button + Add button */}
-        <div className="flex items-center gap-3 flex-wrap mb-6">
-          {filters.map((filter) => (
-            <div
-              key={filter.id}
-              className="flex items-center border border-gray-300 rounded-lg overflow-hidden bg-white"
-            >
-              <span className="px-3 py-2.5 bg-gray-100 text-xs font-semibold text-gray-600 border-r border-gray-300 whitespace-nowrap">
-                {getLabel(filter.type)}
-              </span>
-              {renderFilterInput(filter)}
-              {filter.id !== 0 && (
-                <button
-                  onClick={() => removeFilter(filter.id)}
-                  className="px-2 text-gray-400 hover:text-red-500 text-lg"
-                >
-                  &times;
-                </button>
-              )}
-            </div>
-          ))}
-
-          {/* Filter Button */}
-          <div className="relative" ref={filterRef}>
-            <button
-              onClick={() => {
-                setShowFilterDropdown(!showFilterDropdown);
-                setShowAddDropdown(false);
-              }}
-              className="flex items-center gap-2 px-4 py-2.5 bg-primary-purple text-white rounded-lg text-sm font-medium hover:bg-primary-purple-dark transition-colors"
-            >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+        {/* Registered Users Count */}
+        <div className="bg-white rounded-xl border border-gray-200 shadow-sm mb-6">
+          <div className="px-5 py-4 flex items-center gap-3">
+            <div className="w-8 h-8 rounded-full bg-purple-100 flex items-center justify-center">
+              <svg className="w-4 h-4 text-primary-purple" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
               </svg>
-              Filter
-            </button>
-            {showFilterDropdown && (
-              <div className="absolute left-0 top-full mt-1 z-50 w-48 bg-white border border-gray-200 rounded-lg shadow-lg">
-                {filterOptions.map((opt) => (
-                  <button
-                    key={opt.key}
-                    onClick={() => selectFilter(opt.key)}
-                    className="block w-full text-left px-4 py-2.5 text-sm text-gray-700 hover:bg-purple-50 transition-colors"
-                  >
-                    {opt.label}
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
-
-          {/* Add Button */}
-          {filters.length > 0 && (
-            <div className="relative" ref={addRef}>
-              <button
-                onClick={() => {
-                  setShowAddDropdown(!showAddDropdown);
-                  setShowFilterDropdown(false);
-                }}
-                className="flex items-center justify-center p-2.5 bg-primary-purple text-white rounded-lg hover:bg-primary-purple-dark transition-colors"
-              >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                </svg>
-              </button>
-              {showAddDropdown && (
-                <div className="absolute left-0 top-full mt-1 z-50 w-48 bg-white border border-gray-200 rounded-lg shadow-lg">
-                  {filterOptions.map((opt) => (
-                    <button
-                      key={opt.key}
-                      onClick={() => addNewFilter(opt.key)}
-                      className="block w-full text-left px-4 py-2.5 text-sm text-gray-700 hover:bg-purple-50 transition-colors"
-                    >
-                      {opt.label}
-                    </button>
-                  ))}
-                </div>
-              )}
             </div>
-          )}
+            <span className="text-sm font-semibold text-gray-800">Registered Users</span>
+            <span className="inline-flex items-center justify-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-primary-purple text-white">
+              {registeredCount !== null ? registeredCount : '...'}
+            </span>
+            <span className="text-xs text-gray-400 ml-1">Total registered lawyers in the system</span>
+          </div>
         </div>
 
-        {/* Results */}
+        {/* Results — same layout as Active users panel */}
         <div className="flex items-center justify-between mb-3">
           <h2 className="text-lg font-bold text-gray-900">Results</h2>
           {hasSearched && (
@@ -418,62 +593,331 @@ function LawyerSearch() {
           )}
         </div>
 
-        {loading ? (
-          <div className="bg-white rounded-lg border border-gray-200 p-12 text-center">
-            <svg className="animate-spin h-8 w-8 mx-auto text-primary-purple" fill="none" viewBox="0 0 24 24">
-              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-            </svg>
-            <p className="mt-3 text-sm text-gray-500">Searching lawyers...</p>
+        <div className="rounded border border-gray-300 bg-white shadow-sm">
+          <div
+            ref={toolbarRef}
+            className="relative overflow-visible border-b border-gray-300 bg-[#f0f0f0] px-3 py-2"
+          >
+            {/* Refresh / clear — pinned top-right, never moves when filters wrap */}
+            <div className="absolute right-3 top-2 z-10 flex items-center gap-1.5">
+              <button
+                type="button"
+                onClick={async () => {
+                  await loadRegisteredLawyers();
+                  if (activeFilters.length) await runSearch();
+                }}
+                disabled={lawyersLoading || loading}
+                className={RIO_NAVY_BTN}
+                title="Refresh search"
+              >
+                <svg
+                  className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`}
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                </svg>
+              </button>
+              {hasActiveFilterValues && (
+                <button
+                  type="button"
+                  onClick={clearFilterValues}
+                  className={RIO_NAVY_BTN}
+                  title="Clear filter values"
+                >
+                  <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                  </svg>
+                </button>
+              )}
+            </div>
+
+            {/* Filters grow downward; + stays on first row */}
+            <div className="flex min-w-0 items-start gap-2 pr-20">
+              <button
+                ref={funnelBtnRef}
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  if (addFilterMenuOpen) {
+                    setAddFilterMenuOpen(false);
+                  } else {
+                    openAddFilterMenu();
+                  }
+                }}
+                disabled={loading}
+                aria-expanded={addFilterMenuOpen}
+                className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded border border-gray-300 bg-white shadow-sm hover:bg-gray-50 disabled:opacity-50"
+                title="Add filter"
+              >
+                <svg className="h-5 w-5 text-amber-500" fill="currentColor" viewBox="0 0 24 24" aria-hidden>
+                  <path d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+                </svg>
+              </button>
+
+              {activeFilters.length > 0 && (
+                <>
+                  <button
+                    type="button"
+                    onClick={removeAllFilters}
+                    className={RIO_NAVY_BTN}
+                    title="Remove all filters"
+                  >
+                    <span className="text-lg font-bold leading-none">−</span>
+                  </button>
+
+                  <button
+                    ref={plusBtnRef}
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      if (addFilterMenuOpen) {
+                        setAddFilterMenuOpen(false);
+                      } else {
+                        openAddFilterMenu();
+                      }
+                    }}
+                    className={`${RIO_NAVY_BTN} shrink-0`}
+                    title="Add another filter"
+                    disabled={activeFilters.length >= FILTER_MENU_OPTIONS.length}
+                  >
+                    <span className="text-lg font-bold leading-none">+</span>
+                  </button>
+
+                  <div className="flex min-w-0 flex-1 flex-wrap items-center gap-2">
+                  {activeFilters.map((filterId) => (
+                    <div
+                      key={filterId}
+                      className="inline-flex max-w-full flex-wrap items-center gap-1.5 rounded border border-gray-300 bg-white px-2 py-1 shadow-sm"
+                    >
+                      <span className="shrink-0 text-xs font-bold uppercase tracking-wide text-[#1a3a6b]">
+                        {filterLabel(filterId)}
+                      </span>
+
+                      {filterId === 'keyword' && (
+                        <input
+                          type="search"
+                          value={keywordFilter}
+                          onChange={(e) => setKeywordFilter(e.target.value)}
+                          placeholder="Name, firm, email..."
+                          className={`${RIO_TOOLBAR_INPUT} min-w-[10rem] w-[12rem]`}
+                        />
+                      )}
+
+                      {filterId === 'name' && (
+                        <input
+                          type="search"
+                          value={nameFilter}
+                          onChange={(e) => setNameFilter(e.target.value)}
+                          placeholder="Lawyer name..."
+                          className={`${RIO_TOOLBAR_INPUT} min-w-[10rem] w-[12rem]`}
+                        />
+                      )}
+
+                      {filterId === 'qualification' && (
+                        <select
+                          value={qualificationFilter}
+                          onChange={(e) => setQualificationFilter(e.target.value)}
+                          className={`${RIO_TOOLBAR_INPUT} min-w-[10rem] w-[12rem]`}
+                        >
+                          <option value="">Select qualification</option>
+                          {qualificationOptions.map((q) => (
+                            <option key={q} value={q}>{q}</option>
+                          ))}
+                        </select>
+                      )}
+
+                      {filterId === 'region' && (
+                        <div className="inline-flex flex-wrap items-center gap-2">
+                          <div className="flex shrink-0 items-center gap-1">
+                            <label
+                              htmlFor="lawyer-search-state"
+                              className="shrink-0 text-xs font-semibold text-gray-800"
+                            >
+                              State
+                            </label>
+                            <select
+                              id="lawyer-search-state"
+                              value={regionState}
+                              onChange={(e) => handleStateChange(e.target.value)}
+                              className={`${RIO_TOOLBAR_INPUT} w-[8.5rem]`}
+                            >
+                              <option value="">All states</option>
+                              {stateOptions.map((s) => (
+                                <option key={s} value={s}>{s}</option>
+                              ))}
+                            </select>
+                          </div>
+                          <div className="flex shrink-0 items-center gap-1">
+                            <label
+                              htmlFor="lawyer-search-district"
+                              className="shrink-0 text-xs font-semibold text-gray-800"
+                            >
+                              District
+                            </label>
+                            <select
+                              id="lawyer-search-district"
+                              value={regionDistrict}
+                              onChange={(e) => handleDistrictChange(e.target.value)}
+                              className={`${RIO_TOOLBAR_INPUT} w-[8.5rem]`}
+                              title="Select district"
+                            >
+                              <option value="">All districts</option>
+                              {districtOptions.map((d) => (
+                                <option key={d} value={d}>{d}</option>
+                              ))}
+                            </select>
+                          </div>
+                          <div className="flex shrink-0 items-center gap-1">
+                            <label
+                              htmlFor="lawyer-search-city"
+                              className="shrink-0 text-xs font-semibold text-gray-800"
+                            >
+                              City
+                            </label>
+                            <select
+                              id="lawyer-search-city"
+                              value={regionCity}
+                              onChange={(e) => setRegionCity(e.target.value)}
+                              className={`${RIO_TOOLBAR_INPUT} w-[9rem]`}
+                              title="Select city"
+                            >
+                              <option value="">All cities</option>
+                              {cityOptions.map((c) => (
+                                <option key={c} value={c}>{c}</option>
+                              ))}
+                            </select>
+                          </div>
+                        </div>
+                      )}
+
+                      <button
+                        type="button"
+                        onClick={() => removeFilter(filterId)}
+                        className="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded text-gray-500 hover:bg-gray-100 hover:text-gray-800"
+                        title={`Remove ${filterLabel(filterId)} filter`}
+                        aria-label={`Remove ${filterLabel(filterId)} filter`}
+                      >
+                        <span className="text-sm leading-none">×</span>
+                      </button>
+                    </div>
+                  ))}
+                  </div>
+                </>
+              )}
+            </div>
           </div>
-        ) : hasSearched && results.length === 0 ? (
-          <div className="bg-white rounded-lg border border-gray-200 p-12 text-center">
-            <svg className="mx-auto h-10 w-10 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
-            </svg>
-            <p className="mt-3 text-sm text-gray-500">No lawyers match your filters.</p>
-          </div>
-        ) : results.length > 0 ? (
-          <>
-            <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
-              <div className="overflow-x-auto">
-                <table className="w-full">
-                  <thead className="bg-primary-purple">
+          {renderAddFilterMenu()}
+
+          {loading || lawyersLoading ? (
+            <div className="px-4 py-12 text-center">
+              <svg className="animate-spin h-8 w-8 mx-auto text-[#1a3a6b]" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+              <p className="mt-3 text-sm text-gray-500">Searching lawyers...</p>
+            </div>
+          ) : (
+            <div className="max-h-[560px] overflow-auto">
+              <table className="min-w-full border-collapse">
+                <thead className="sticky top-0 bg-[#1a3a6b]">
                     <tr>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-white uppercase">Lawyer Name</th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-white uppercase">Specialization</th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-white uppercase">Firm</th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-white uppercase">Location</th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-white uppercase">Contact</th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-white uppercase">Cases</th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-white uppercase">Status</th>
-                      <th className="px-4 py-3 text-center text-xs font-medium text-white uppercase w-10"></th>
+                      <th className="w-12 border-r border-[#152e55] px-3 py-2.5 text-center text-xs font-bold uppercase tracking-wide text-white">
+                        #
+                      </th>
+                      <th className="border-r border-[#152e55] px-4 py-2.5 text-left text-xs font-bold uppercase tracking-wide text-white">
+                        Advocate
+                      </th>
+                      <th className="border-r border-[#152e55] px-4 py-2.5 text-left text-xs font-bold uppercase tracking-wide text-white">
+                        Qualification
+                      </th>
+                      <th className="border-r border-[#152e55] px-4 py-2.5 text-left text-xs font-bold uppercase tracking-wide text-white">
+                        Firm
+                      </th>
+                      <th className="border-r border-[#152e55] px-4 py-2.5 text-left text-xs font-bold uppercase tracking-wide text-white">
+                        Location
+                      </th>
+                      <th className="border-r border-[#152e55] px-4 py-2.5 text-left text-xs font-bold uppercase tracking-wide text-white">
+                        Contact
+                      </th>
+                      <th className="border-r border-[#152e55] px-4 py-2.5 text-left text-xs font-bold uppercase tracking-wide text-white">
+                        Cases
+                      </th>
+                      <th className="px-4 py-2.5 text-left text-xs font-bold uppercase tracking-wide text-white">
+                        Status
+                      </th>
+                      <th className="w-10 px-2 py-2.5"></th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-gray-100">
-                    {paginatedResults.map((lawyer) => (
+                  <tbody className="divide-y divide-gray-100 bg-white">
+                    {!hasSearched ? (
+                      <tr>
+                        <td colSpan={9} className="px-4 py-12 text-center">
+                          <p className="text-sm font-medium text-gray-700">
+                            {fetchError
+                              ? fetchError
+                              : lawyersLoading
+                                ? 'Loading registered lawyers…'
+                                : 'Use the filter above to search lawyers'}
+                          </p>
+                          <p className="mt-1 text-xs text-gray-500">
+                            {!fetchError && !lawyersLoading &&
+                              'Click the funnel icon, choose Keyword, Name, Region, or Qualification'}
+                          </p>
+                        </td>
+                      </tr>
+                    ) : allLawyers.length === 0 ? (
+                      <tr>
+                        <td colSpan={9} className="px-4 py-12 text-center">
+                          <p className="text-sm font-medium text-gray-700">
+                            {fetchError || 'No registered lawyers loaded'}
+                          </p>
+                          <p className="mt-1 text-xs text-gray-500">
+                            Restart the backend and click the refresh button.
+                          </p>
+                        </td>
+                      </tr>
+                    ) : paginatedResults.length === 0 ? (
+                      <tr>
+                        <td colSpan={9} className="px-4 py-12 text-center">
+                          <p className="text-sm font-medium text-gray-700">
+                            No lawyers match your filters
+                          </p>
+                          <p className="mt-1 text-xs text-gray-500">
+                            For name search use Add Filter → Name, or Keyword to search name, firm, email, and phone.
+                          </p>
+                        </td>
+                      </tr>
+                    ) : (
+                    paginatedResults.map((lawyer, index) => (
                       <Fragment key={lawyer.id}>
                         <tr
                           className={`hover:bg-gray-50 cursor-pointer transition-colors ${expandedRow === lawyer.id ? 'bg-purple-50' : ''}`}
                           onClick={() => setExpandedRow(expandedRow === lawyer.id ? null : lawyer.id)}
                         >
+                          <td className="px-4 py-3 text-center text-sm text-gray-400">
+                            {(currentPage - 1) * resultsPerPage + index + 1}
+                          </td>
                           <td className="px-4 py-3">
                             <div className="flex items-center gap-2.5">
-                              <div className="w-8 h-8 rounded-full bg-primary-purple flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
-                                {lawyer.name.split(' ').filter((_, i) => i > 0).map((n) => n[0]).join('').slice(0, 2).toUpperCase()}
-                              </div>
+                              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-purple-100 text-xs font-bold text-primary-purple">
+                                {getInitials(lawyer.name)}
+                              </span>
                               <span className="text-sm font-medium text-gray-900">{lawyer.name}</span>
                             </div>
                           </td>
                           <td className="px-4 py-3">
-                            <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-blue-50 text-blue-700">
-                              {lawyer.specialization}
+                            <span className="text-sm text-gray-800">
+                              {lawyer.qualification || '—'}
                             </span>
                           </td>
                           <td className="px-4 py-3 text-sm text-gray-700">{lawyer.firm}</td>
                           <td className="px-4 py-3">
-                            <div className="text-sm text-gray-800">{lawyer.city}</div>
-                            <div className="text-xs text-gray-400">{lawyer.district}, {lawyer.state}</div>
+                            <div className="text-sm text-gray-800">{lawyer.city || '—'}</div>
+                            <div className="text-xs text-gray-400">
+                              {[lawyer.city, lawyer.state].filter(Boolean).join(', ') || '—'}
+                            </div>
                           </td>
                           <td className="px-4 py-3">
                             <div className="text-sm text-gray-800">{lawyer.phone}</div>
@@ -484,7 +928,11 @@ function LawyerSearch() {
                           </td>
                           <td className="px-4 py-3">
                             <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${
-                              lawyer.status === 'Active' ? 'bg-green-100 text-green-700' : 'bg-orange-100 text-orange-700'
+                              lawyer.status === 'Active'
+                                ? 'bg-green-100 text-green-700'
+                                : lawyer.status === 'Inactive'
+                                  ? 'bg-orange-100 text-orange-700'
+                                  : 'bg-gray-100 text-gray-600'
                             }`}>
                               {lawyer.status}
                             </span>
@@ -501,7 +949,7 @@ function LawyerSearch() {
 
                         {expandedRow === lawyer.id && (
                           <tr className="bg-purple-50">
-                            <td colSpan={8} className="px-4 py-4">
+                            <td colSpan={9} className="px-4 py-4">
                               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                 <div className="bg-white rounded-lg p-4 border border-gray-100">
                                   <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">Contact Details</h4>
@@ -524,8 +972,7 @@ function LawyerSearch() {
                                   <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">Office Location</h4>
                                   <div className="space-y-2 text-sm">
                                     <div className="flex justify-between"><span className="text-gray-500">City</span><span className="text-gray-800 font-medium">{lawyer.city}</span></div>
-                                    <div className="flex justify-between"><span className="text-gray-500">District</span><span className="text-gray-800 font-medium">{lawyer.district}</span></div>
-                                    <div className="flex justify-between"><span className="text-gray-500">State</span><span className="text-gray-800 font-medium">{lawyer.state}</span></div>
+                                    <div className="flex justify-between"><span className="text-gray-500">State</span><span className="text-gray-800 font-medium">{lawyer.state || '—'}</span></div>
                                     <div className="flex justify-between"><span className="text-gray-500">PIN Code</span><span className="text-gray-800 font-medium">{lawyer.pincode}</span></div>
                                   </div>
                                 </div>
@@ -536,7 +983,7 @@ function LawyerSearch() {
                                     <div className="text-xs text-gray-500 mt-1">Total Cases Handled</div>
                                   </div>
                                   <div className="mt-3 pt-3 border-t border-gray-100">
-                                    <div className="flex justify-between text-sm"><span className="text-gray-500">Specialization</span><span className="text-gray-800 font-medium">{lawyer.specialization}</span></div>
+                                    <div className="flex justify-between text-sm"><span className="text-gray-500">Qualification</span><span className="text-gray-800 font-medium">{lawyer.qualification || '—'}</span></div>
                                     <div className="flex justify-between text-sm mt-1"><span className="text-gray-500">Firm</span><span className="text-gray-800 font-medium">{lawyer.firm}</span></div>
                                   </div>
                                 </div>
@@ -545,14 +992,14 @@ function LawyerSearch() {
                           </tr>
                         )}
                       </Fragment>
-                    ))}
+                    )))}
                   </tbody>
                 </table>
-              </div>
             </div>
+          )}
 
-            {totalPages > 1 && (
-              <div className="mt-4 flex items-center justify-between">
+          {hasSearched && results.length > 0 && totalPages > 1 && (
+              <div className="border-t border-gray-200 px-4 py-3 flex items-center justify-between bg-gray-50">
                 <p className="text-sm text-gray-500">
                   Showing {(currentPage - 1) * resultsPerPage + 1}–{Math.min(currentPage * resultsPerPage, results.length)} of {results.length} lawyers
                 </p>
@@ -568,7 +1015,7 @@ function LawyerSearch() {
                     <button
                       key={page}
                       onClick={() => setCurrentPage(page)}
-                      className={`w-8 h-8 rounded text-sm font-medium transition-colors ${currentPage === page ? 'bg-primary-purple text-white' : 'text-gray-600 hover:bg-gray-100'}`}
+                      className={`w-8 h-8 rounded text-sm font-medium transition-colors ${currentPage === page ? 'bg-[#1a3a6b] text-white' : 'text-gray-600 hover:bg-gray-100'}`}
                     >
                       {page}
                     </button>
@@ -583,17 +1030,7 @@ function LawyerSearch() {
                 </div>
               </div>
             )}
-          </>
-        ) : (
-          <div className="bg-white rounded-lg border border-gray-200 p-12 text-center">
-            <svg className="mx-auto h-10 w-10 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-            </svg>
-            <p className="mt-3 text-sm text-gray-500">
-              Use the search and filter options above to find lawyers.
-            </p>
-          </div>
-        )}
+        </div>
       </main>
     </div>
   );

@@ -3,6 +3,18 @@
  * Source: state government / census administrative lists.
  */
 
+export const ALL_INDIAN_STATES = [
+  'Andhra Pradesh', 'Arunachal Pradesh', 'Assam', 'Bihar', 'Chhattisgarh',
+  'Goa', 'Gujarat', 'Haryana', 'Himachal Pradesh', 'Jharkhand',
+  'Karnataka', 'Kerala', 'Madhya Pradesh', 'Maharashtra', 'Manipur',
+  'Meghalaya', 'Mizoram', 'Nagaland', 'Odisha', 'Punjab',
+  'Rajasthan', 'Sikkim', 'Tamil Nadu', 'Telangana', 'Tripura',
+  'Uttar Pradesh', 'Uttarakhand', 'West Bengal',
+  'Andaman and Nicobar Islands', 'Chandigarh',
+  'Dadra and Nagar Haveli and Daman and Diu', 'Delhi',
+  'Jammu and Kashmir', 'Ladakh', 'Lakshadweep', 'Puducherry',
+];
+
 export const REGION_DISTRICTS = {
   'Andhra Pradesh': [
     'Anantapur', 'Chittoor', 'East Godavari', 'Guntur', 'Krishna',
@@ -330,3 +342,54 @@ export const DISTRICT_CITIES_EXTRA = {
     Kozhikode: ['Kozhikode', 'Calicut'],
   },
 };
+
+export function getDistrictsForState(state) {
+  if (!state) return [];
+  return (REGION_DISTRICTS[state] || []).slice().sort();
+}
+
+export function getAllDistricts() {
+  const set = new Set();
+  Object.values(REGION_DISTRICTS).forEach((districts) => {
+    districts.forEach((d) => set.add(d));
+  });
+  return [...set].sort();
+}
+
+export function getCitiesForDistrict(state, district) {
+  if (!state || !district) return [];
+  const extras = DISTRICT_CITIES_EXTRA[state]?.[district] || [];
+  return extras.length > 0 ? [...extras].sort() : [district];
+}
+
+/** Cities for a district name when state is unknown (e.g. "All states" selected). */
+export function getCitiesForDistrictName(district) {
+  if (!district) return [];
+  const set = new Set();
+  for (const [state, districts] of Object.entries(REGION_DISTRICTS)) {
+    if (districts.includes(district)) {
+      getCitiesForDistrict(state, district).forEach((c) => set.add(c));
+    }
+  }
+  if (set.size === 0) set.add(district);
+  return [...set].sort();
+}
+
+export function getAllCitiesForState(state) {
+  if (!state) return [];
+  const set = new Set();
+  (REGION_DISTRICTS[state] || []).forEach((district) => {
+    getCitiesForDistrict(state, district).forEach((c) => set.add(c));
+  });
+  return [...set].sort();
+}
+
+export function getAllCities() {
+  const set = new Set();
+  Object.entries(REGION_DISTRICTS).forEach(([state, districts]) => {
+    districts.forEach((district) => {
+      getCitiesForDistrict(state, district).forEach((c) => set.add(c));
+    });
+  });
+  return [...set].sort();
+}

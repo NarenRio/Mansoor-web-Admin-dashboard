@@ -274,6 +274,42 @@ export const adminAPI = {
     }
   },
 
+  getRegisteredLawyerCount: async () => {
+    try {
+      const response = await api.get('/admin/registered-lawyer-count');
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching registered lawyer count:', error);
+      throw error;
+    }
+  },
+
+  getLawyersForSearch: async (filters = {}) => {
+    try {
+      const params = {};
+      Object.entries(filters).forEach(([key, value]) => {
+        if (value !== undefined && value !== null && String(value).trim() !== '') {
+          params[key] = String(value).trim();
+        }
+      });
+      const response = await api.get('/admin/lawyer-search', { params });
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching lawyers for search:', error);
+      throw error;
+    }
+  },
+
+  getLawyerSearchFilterOptions: async () => {
+    try {
+      const response = await api.get('/admin/lawyer-search/filter-options');
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching lawyer search filter options:', error);
+      throw error;
+    }
+  },
+
 };
 
 export const publicAPI = {
