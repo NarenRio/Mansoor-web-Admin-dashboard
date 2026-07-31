@@ -322,6 +322,18 @@ export const publicAPI = {
       throw error;
     }
   },
+  requestDeletionOtp: async (payload) => {
+    const response = await api.post('/account-deletion/request-otp', payload);
+    return response.data;
+  },
+  verifyDeletionOtp: async (payload) => {
+    const response = await api.post('/account-deletion/verify-otp', payload);
+    return response.data;
+  },
+  confirmAccountDeletion: async (payload) => {
+    const response = await api.post('/account-deletion/confirm', payload);
+    return response.data;
+  },
 };
 
 export default api;
