@@ -11,7 +11,7 @@ const STEPS = [
 
 const PROGRESS_STAGES = [
   { pct: 15, label: 'Verifying your request…' },
-  { pct: 40, label: 'Locating your La LAW account…' },
+  { pct: 40, label: 'Locating your LA LAW account…' },
   { pct: 70, label: 'Removing account credentials…' },
   { pct: 90, label: 'Sending confirmation email…' },
   { pct: 100, label: 'Account deleted' },
@@ -141,13 +141,13 @@ function AccountDeletionRequestPage() {
       <div className="mx-auto flex min-h-screen w-full max-w-3xl flex-col px-4 py-6 sm:px-6 sm:py-10 lg:py-14">
         <header className="mb-6 sm:mb-8">
           <p className="text-xs font-semibold uppercase tracking-[0.2em] text-rose-700">
-            La LAW
+            LA LAW
           </p>
           <h1 className="mt-2 text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl md:text-4xl">
             Delete your account
           </h1>
           <p className="mt-2 max-w-2xl text-sm text-slate-600 sm:text-base">
-            Permanently remove your La LAW login account. This page works on phone,
+            Permanently remove your LA LAW login account. This page works on phone,
             tablet, and desktop — no admin login required.
           </p>
         </header>
@@ -220,7 +220,7 @@ function AccountDeletionRequestPage() {
                 />
               </label>
               <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
-                Deleting your account removes your La LAW login and all data linked
+                Deleting your account removes your LA LAW login and all data linked
                 to you in the system (profile, cases, petitions, documents, and
                 related records). This cannot be undone.
               </div>
@@ -300,7 +300,7 @@ function AccountDeletionRequestPage() {
               <div className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-900">
                 <p className="font-semibold">This cannot be undone.</p>
                 <p className="mt-2">
-                  All of your La LAW data linked to this account will be removed,
+                  All of your LA LAW data linked to this account will be removed,
                   including:
                 </p>
                 <ul className="mt-2 list-disc space-y-1 pl-5">
@@ -314,7 +314,7 @@ function AccountDeletionRequestPage() {
                   <li>App usage / session activity linked to your login</li>
                 </ul>
                 <p className="mt-3">
-                  After deletion you will no longer be able to sign in to La LAW.
+                  After deletion you will no longer be able to sign in to LA LAW.
                   A confirmation email will be sent once the process is complete.
                 </p>
               </div>
@@ -345,7 +345,7 @@ function AccountDeletionRequestPage() {
                   className="mt-1 h-4 w-4 rounded border-slate-300 text-rose-600 focus:ring-rose-500"
                 />
                 <span>
-                  I understand this permanently deletes my La LAW account and I want to
+                  I understand this permanently deletes my LA LAW account and I want to
                   continue.
                 </span>
               </label>
@@ -399,7 +399,7 @@ function AccountDeletionRequestPage() {
                   Account deleted
                 </h2>
                 <p className="mt-2 text-sm text-slate-600 sm:text-base">
-                  The La LAW account for <span className="font-semibold">{email}</span>{' '}
+                  The LA LAW account for <span className="font-semibold">{email}</span>{' '}
                   has been permanently removed.
                 </p>
                 {deletedAt ? (

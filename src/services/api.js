@@ -67,7 +67,7 @@ export const adminAPI = {
     }
   },
 
-  // States, districts, courts hierarchy for La Law filters
+  // States, districts, courts hierarchy for LA LAW filters
   getCourtFilterOptions: async () => {
     try {
       const response = await api.get('/admin/court-filter-options');
